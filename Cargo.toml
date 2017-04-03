@@ -1,0 +1,12 @@
+[package]
+name = "extrahop"
+version = "0.1.0"
+authors = ["Ted Driggs <ted.driggs@outlook.com>"]
+description = "Client library for the ExtraHop platform."
+keywords = ["extrahop"]
+
+[dependencies]
+reqwest = "0.4"
+serde = "0.9"
+serde_derive = "0.9"
+serde_json = "0.9"
