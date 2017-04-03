@@ -27,13 +27,13 @@ mod traits;
 mod user;
 mod user_group;
 
+pub mod error;
 pub mod sharing;
 
 pub use api_key::ApiKey;
 pub use client::Client;
+pub use error::Error;
 pub use oid::Oid;
 pub use traits::Patch;
 pub use user::Username;
 pub use user_group::UserGroupId;
-
-// for the moment, the `error` module is staying hidden while I evaluate error_chain.
