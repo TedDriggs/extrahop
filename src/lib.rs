@@ -21,6 +21,7 @@ extern crate serde_json;
 mod macros;
 
 mod api_key;
+mod client;
 mod oid;
 mod traits;
 mod user;
@@ -29,6 +30,7 @@ mod user_group;
 pub mod sharing;
 
 pub use api_key::ApiKey;
+pub use client::Client;
 pub use oid::Oid;
 pub use traits::Patch;
 pub use user::Username;
