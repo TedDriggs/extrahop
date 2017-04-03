@@ -3,6 +3,7 @@ name = "extrahop"
 version = "0.1.0"
 authors = ["Ted Driggs <ted.driggs@outlook.com>"]
 repository = "https://github.com/TedDriggs/extrahop"
+license = "MIT"
 description = "Client library for the ExtraHop platform."
 keywords = ["extrahop"]
 
