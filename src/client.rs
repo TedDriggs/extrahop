@@ -2,7 +2,10 @@ use reqwest::{self, Method, RequestBuilder};
 
 use ApiKey;
 
-/// A client for connecting to the ExtraHop REST API.
+/// A client for making authenticated requests to the ExtraHop REST API.
+///
+/// The client encapsulates the host name and API key needed to make calls to
+/// the appliance.
 pub struct Client {
     host: String,
     api_key: ApiKey,
@@ -24,8 +27,10 @@ impl Client {
         &self.host
     }
 
-    /// Creates a GET request builder for the provided relative path.
-    /// The path should not include the "api/v1/" prefix.
+    /// Creates a GET request builder for the provided relative path with the 
+    /// `Authorization` header included.
+    ///
+    /// The path should not include the `/api/v1/` prefix.
     ///
     /// ```rust,no_run
     /// # use extrahop::ApiKey;
@@ -36,33 +41,46 @@ impl Client {
         self.request(Method::Get, path)
     }
 
-    /// Creates a POST request builder for the provided relative path.
+    /// Creates a POST request builder for the provided relative path with the 
+    /// `Authorization` header included.
+    ///
+    /// The path should not include the `/api/v1/` prefix.
     pub fn post(&self, path: &str) -> RequestBuilder {
         self.request(Method::Post, path)
     }
     
-    /// Creates a PATCH request builder for the provided relative path.
+    /// Creates a PATCH request builder for the provided relative path with the 
+    /// `Authorization` header included.
+    ///
+    /// The path should not include the `/api/v1/` prefix.
     pub fn patch(&self, path: &str) -> RequestBuilder {
         self.request(Method::Patch, path)
     }
     
-    /// Creates a PUT request builder for the provided relative path.
+    /// Creates a PUT request builder for the provided relative path with the 
+    /// `Authorization` header included.
+    ///
+    /// The path should not include the `/api/v1/` prefix.
     pub fn put(&self, path: &str) -> RequestBuilder {
         self.request(Method::Put, path)
     }
     
-    /// Creates a DELETE request builder for the provided relative path.
+    /// Creates a DELETE request builder for the provided relative path with the 
+    /// `Authorization` header included.
+    ///
+    /// The path should not include the `/api/v1/` prefix.
     pub fn delete(&self, path: &str) -> RequestBuilder {
         self.request(Method::Delete, path)
     }
 
-    /// Creates a GET request builder for the provided relative path.
-    /// The path should not include the "api/v1/" prefix.
+    /// Creates a request builder for the provided relative path with the 
+    /// `Authorization` header included.
+    ///
+    /// The path should not include the `/api/v1/` prefix.
     ///
     /// ```rust,no_run
     /// # extern crate reqwest;
     /// # use extrahop::ApiKey;
-    ///
     /// use reqwest::Method;
     /// let client = Client::new("extrahop", ApiKey::new("key".to_string()));
     /// client.request(Method::Get, "whitelist/devices").send().unwrap();
