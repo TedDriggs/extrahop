@@ -10,6 +10,9 @@
 //! public certificate from `http://{EXTRAHOP_HOST}/public.cer` and trust it at the system
 //! level.
 
+#[macro_use]
+extern crate error_chain;
+
 extern crate reqwest;
 extern crate serde;
 
@@ -27,13 +30,13 @@ mod traits;
 mod user;
 mod user_group;
 
-pub mod error;
+pub mod errors;
 pub mod sharing;
 
 pub use api_key::ApiKey;
 pub use client::Client;
-pub use error::Error;
+pub use errors::{Error, ErrorKind, Result};
 pub use oid::Oid;
-pub use traits::Patch;
+pub use traits::{ApiResponse, Patch};
 pub use user::Username;
 pub use user_group::UserGroupId;
