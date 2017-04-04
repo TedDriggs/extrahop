@@ -1,3 +1,9 @@
+//! Types for handling errors.
+//!
+//! This crate uses [`error_chain`][1] for its error handling.
+//!
+//! [1]: https://docs.rs/error-chain
+
 use std::fmt;
 use std::error::Error as StdError;
 use reqwest::StatusCode;
@@ -8,13 +14,13 @@ use serde::de::value::Error as ValueError;
 
 error_chain! {
     foreign_links {
-        Http(ReqwestError);
+        Http(ReqwestError) #[doc = "An error from the `reqwest` crate."];
         
-        Json(SerdeJsonError);
+        Json(SerdeJsonError) #[doc = "An error from the `serde_json` crate."];
         
-        Parse(ValueError);
+        Parse(ValueError) #[doc = "An error from the `serde::de` module."];
         
-        Rest(RestError);
+        Rest(RestError) #[doc = "An error from the ExtraHop appliance"];
     }
 }
 
