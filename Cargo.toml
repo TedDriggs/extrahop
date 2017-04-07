@@ -1,9 +1,9 @@
 [package]
 name = "extrahop"
-version = "0.2.1"
+version = "0.2.2"
 authors = ["Ted Driggs <ted.driggs@outlook.com>"]
 repository = "https://github.com/TedDriggs/extrahop"
-documentation = "https://docs.rs/extrahop/0.2.1"
+documentation = "https://docs.rs/extrahop/0.2.2"
 license = "MIT"
 description = "Client library for the ExtraHop platform."
 keywords = ["extrahop"]

@@ -30,12 +30,12 @@ impl Client {
     /// Creates a GET request builder for the provided relative path with the 
     /// `Authorization` header included.
     ///
-    /// The path should not include the `/api/v1/` prefix.
+    /// The path should not include the `/api/v1` prefix.
     ///
     /// ```rust,no_run
     /// # use extrahop::ApiKey;
     /// let client = Client::new("extrahop.i.northwind.com", ApiKey::new("key".to_string()));
-    /// client.get("whitelist/devices").send().unwrap();
+    /// client.get("/whitelist/devices").send().unwrap();
     /// ```
     pub fn get(&self, path: &str) -> RequestBuilder {
         self.request(Method::Get, path)
@@ -44,7 +44,7 @@ impl Client {
     /// Creates a POST request builder for the provided relative path with the 
     /// `Authorization` header included.
     ///
-    /// The path should not include the `/api/v1/` prefix.
+    /// The path should not include the `/api/v1` prefix.
     pub fn post(&self, path: &str) -> RequestBuilder {
         self.request(Method::Post, path)
     }
@@ -52,7 +52,7 @@ impl Client {
     /// Creates a PATCH request builder for the provided relative path with the 
     /// `Authorization` header included.
     ///
-    /// The path should not include the `/api/v1/` prefix.
+    /// The path should not include the `/api/v1` prefix.
     pub fn patch(&self, path: &str) -> RequestBuilder {
         self.request(Method::Patch, path)
     }
@@ -60,7 +60,7 @@ impl Client {
     /// Creates a PUT request builder for the provided relative path with the 
     /// `Authorization` header included.
     ///
-    /// The path should not include the `/api/v1/` prefix.
+    /// The path should not include the `/api/v1` prefix.
     pub fn put(&self, path: &str) -> RequestBuilder {
         self.request(Method::Put, path)
     }
@@ -76,18 +76,20 @@ impl Client {
     /// Creates a request builder for the provided relative path with the 
     /// `Authorization` header included.
     ///
-    /// The path should not include the `/api/v1/` prefix.
+    /// The path should not include the `/api/v1` prefix.
     ///
     /// ```rust,no_run
     /// # extern crate reqwest;
     /// # use extrahop::ApiKey;
     /// use reqwest::Method;
     /// let client = Client::new("extrahop", ApiKey::new("key".to_string()));
-    /// client.request(Method::Get, "whitelist/devices").send().unwrap();
+    /// client.request(Method::Get, "/whitelist/devices").send().unwrap();
     /// ```
     pub fn request(&self, method: Method, path: &str) -> RequestBuilder {
+        let leading_slash = if path.starts_with("/") { "" } else { "/" };
+        
         self.r_client
-            .request(method, &format!("https://{}/api/v1/{}", self.host, path))
+            .request(method, &format!("https://{}/api/v1/{}{}", self.host, leading_slash, path))
             .header(self.api_key.clone().to_header())
     }
 }

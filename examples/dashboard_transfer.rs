@@ -30,7 +30,7 @@ impl DashboardTransfer {
 fn main() {
     let client = Client::new("ehd-vm", ApiKey::new("YOUR KEY".to_string()));
     let dashboards: Vec<Dashboard> =
-        client.get("dashboards")
+        client.get("/dashboards")
             .send()
             .validate_and_read()
             .unwrap();
@@ -40,7 +40,7 @@ fn main() {
     for dashboard in dashboards {
         if dashboard.owner == from_user {
             let transfer_result = client
-                .patch(&format!("dashboards/{}", dashboard.id))
+                .patch(&format!("/dashboards/{}", dashboard.id))
                 .json(&patch)
                 .send()
                 .validate_status();
