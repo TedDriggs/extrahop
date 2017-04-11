@@ -6,6 +6,7 @@ use ApiKey;
 ///
 /// The client encapsulates the host name and API key needed to make calls to
 /// the appliance.
+#[derive(Debug)]
 pub struct Client {
     host: String,
     api_key: ApiKey,
