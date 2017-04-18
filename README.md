@@ -1,6 +1,8 @@
 # Extrahop REST API Client
 Rust tools for working with the ExtraHop REST API.
 
+[![Build Status](https://travis-ci.org/TedDriggs/extrahop.svg?branch=master)](https://travis-ci.org/TedDriggs/extrahop)
+
 This library is not an exhaustive strongly-typed client for the API; using that model is not recommended
 as it may lead to breakages during deserialization that don't impact your code. Instead, the library
 provides utilities which should be used in concert with structs defined in consuming libraries to make
