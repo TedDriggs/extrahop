@@ -35,7 +35,7 @@ pub mod sharing;
 
 pub use api_key::ApiKey;
 pub use client::Client;
-pub use errors::{Error, ErrorKind, Result};
+pub use errors::{Error, ErrorKind, Result, ResultExt};
 pub use oid::Oid;
 pub use traits::{ApiResponse, Patch};
 pub use user::Username;

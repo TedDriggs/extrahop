@@ -4,27 +4,32 @@ use std::str::FromStr;
 
 use reqwest::header::{self, Scheme};
 
+use {Error, ErrorKind, Result};
 
 static FULL_PREFIX: &'static str = "ExtraHop apikey=";
 
 /// A REST API key which authenticates the caller to the ExtraHop.
 ///
-/// Clients must pass an API key in the [`Authorization`] header of every request.
+/// Clients must pass an API key in the [`Authorization`] header of every request. The 
+/// [`extrahop::Client`] type handles this automatically, or it can be done manually.
 ///
-/// ```rust
+/// # Examples
+/// Manually adding the header to a request:
+///
+/// ```rust,no_run
 /// # extern crate reqwest;
 /// # extern crate extrahop;
-/// # fn main() {
+/// # fn main() {    
 /// use reqwest::header::Authorization;
 /// use extrahop::ApiKey;
 ///
-/// let header = Authorization(ApiKey::new("your-key".to_string()));
-/// // insert into request using "header()" method.
+/// let header = Authorization(ApiKey::new("your-key"));
+/// let _req = reqwest::Client::new().unwrap().get("https://extrahop.com/api/v1/devices").header(header).send();
 /// # }
 /// ```
 ///
-/// As a best practice, API keys should be collected from the user at runtime or stored in a separate
-/// file; they should not be checked in with source code.
+/// As a best practice, API keys should be collected from the user at runtime, or stored in an 
+/// environment variable or separate file; they should not be checked in with source code.
 ///
 /// [`Authorization`]: https://docs.rs/reqwest/0.4.0/reqwest/header/struct.Authorization.html
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -32,8 +37,8 @@ pub struct ApiKey(String);
 
 impl ApiKey {
     /// Creates a new `ApiKey`. This removes any leading or trailing whitespace.
-    pub fn new(key: String) -> Self {
-        ApiKey(key.trim().to_string())
+    pub fn new<S: Into<String>>(key: S) -> Self {
+        ApiKey(key.into().trim().to_string())
     }
 
     /// Converts the API key to an Authorization header.
@@ -54,6 +59,18 @@ impl Scheme for ApiKey {
     }
 }
 
+impl From<String> for ApiKey {
+    fn from(v: String) -> Self {
+        ApiKey::new(v.to_string())
+    }
+}
+
+impl<'a> From<&'a str> for ApiKey {
+    fn from(v: &str) -> Self {
+        ApiKey::new(v.to_string())
+    }
+}
+
 impl From<ApiKey> for header::Authorization<ApiKey> {
     fn from(v: ApiKey) -> Self {
         v.to_header()
@@ -67,13 +84,39 @@ impl From<ApiKey> for header::Authorization<ApiKey> {
 ///
 /// [`ApiKey::new`]: #method.new
 impl FromStr for ApiKey {
-    type Err = &'static str;
+    type Err = Error;
 
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
+    fn from_str(s: &str) -> Result<Self> {
         if s.starts_with(FULL_PREFIX) {
-            Ok(ApiKey::new(s.trim_left_matches(FULL_PREFIX).into()))
+            Ok(ApiKey::new(s.trim_left_matches(FULL_PREFIX)))
         } else {
-            Err("ApiKey::from_str requires being passed the full value of an Authorization header")
+            Err(ErrorKind::ApiKeyParseError.into())
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::str::FromStr;
+    
+    use ErrorKind;
+    use super::ApiKey;
+    
+    #[test]
+    fn parse_header() {
+        let full_header = "ExtraHop apikey=1a2b3c4d5e";
+        let parsed = full_header.parse().expect("Parsing should handle a well-formed header body");
+        assert_eq!(ApiKey::new("1a2b3c4d5e"), parsed);
+    }
+    
+    #[test]
+    fn parse_error() {
+        let bare_key = "1a2b3c4d5e";
+        let parse_err = ApiKey::from_str(bare_key).unwrap_err();
+        if let ErrorKind::ApiKeyParseError = *parse_err.kind() {
+            println!("{}", parse_err);
+        } else {
+            panic!("Error should have been an API key parse failure");
         }
     }
 }

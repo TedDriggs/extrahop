@@ -28,7 +28,7 @@ impl DashboardTransfer {
 }
 
 fn main() {
-    let client = Client::new("ehd-vm", ApiKey::new("YOUR KEY".to_string()));
+    let client = Client::new("ehd-vm", ApiKey::new("YOUR KEY"));
     let dashboards: Vec<Dashboard> =
         client.get("/dashboards")
             .send()

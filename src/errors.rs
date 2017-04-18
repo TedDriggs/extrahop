@@ -22,6 +22,12 @@ error_chain! {
         
         Rest(RestError) #[doc = "An error from the ExtraHop appliance"];
     }
+    
+    errors {
+        ApiKeyParseError {
+            description("The provided string was not a complete API key header including `ExtraHop apikey=`. Did you mean ApiKey::from?")
+        }
+    }
 }
 
 /// A 4xx or 5xx response from the ExtraHop appliance.

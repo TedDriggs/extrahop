@@ -9,7 +9,7 @@ request and response handling easier.
 # Examples
 ```rust
 use extrahop;
-let client = Client::new("extrahop", ApiKey::new("key".to_string()));
+let client = Client::new("extrahop", ApiKey::new("YOUR_KEY"));
 let rsp = client.get("dashboards").send();
 // handle a normal reqwest response.
 ```

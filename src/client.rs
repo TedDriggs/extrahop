@@ -34,8 +34,8 @@ impl Client {
     /// The path should not include the `/api/v1` prefix.
     ///
     /// ```rust,no_run
-    /// # use extrahop::ApiKey;
-    /// let client = Client::new("extrahop.i.northwind.com", ApiKey::new("key".to_string()));
+    /// # use extrahop::{ApiKey, Client};
+    /// let client = Client::new("extrahop.i.northwind.com", ApiKey::new("key"));
     /// client.get("/whitelist/devices").send().unwrap();
     /// ```
     pub fn get(&self, path: &str) -> RequestBuilder {
@@ -81,10 +81,13 @@ impl Client {
     ///
     /// ```rust,no_run
     /// # extern crate reqwest;
-    /// # use extrahop::ApiKey;
+    /// # extern crate extrahop;
+    /// # use extrahop::{ApiKey, Client};
+    /// # fn main() {
     /// use reqwest::Method;
     /// let client = Client::new("extrahop", ApiKey::new("key".to_string()));
     /// client.request(Method::Get, "/whitelist/devices").send().unwrap();
+    /// # }
     /// ```
     pub fn request(&self, method: Method, path: &str) -> RequestBuilder {
         let leading_slash = if path.starts_with("/") { "" } else { "/" };
