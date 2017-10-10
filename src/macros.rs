@@ -1,9 +1,10 @@
 /// Provides serialization and deserialization functions which should use a default 
 /// string instead of `null` on the wire.
+#[allow(unused_macros)]
 macro_rules! optional_string {
     ($n:ident : $s:tt) => {
         pub mod $n {
-            use serde::de::value::ValueDeserializer;
+            use serde::de::value::StringDeserializer;
             use serde::{Serialize, Serializer, Deserialize, Deserializer};
 
             /// The string which represents `null` on the wire.
@@ -50,7 +51,8 @@ macro_rules! fromstr_deserialize {
                 use std::string::ToString;
 
                 use serde::Deserialize;
-                use serde::de::value::{self, ValueDeserializer};
+                use serde::de::IntoDeserializer;
+                use serde::de::value;
 
                 $t::deserialize(s.into_deserializer()).map_err(|e: value::Error| e.to_string())
             }

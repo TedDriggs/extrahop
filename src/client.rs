@@ -19,7 +19,7 @@ impl Client {
         Client {
             host: host.into(),
             api_key: api_key,
-            r_client: reqwest::Client::new().expect("reqwest::Client creation failure not handled"),
+            r_client: reqwest::Client::new(),
         }
     }
 
@@ -92,8 +92,11 @@ impl Client {
     pub fn request(&self, method: Method, path: &str) -> RequestBuilder {
         let leading_slash = if path.starts_with("/") { "" } else { "/" };
         
-        self.r_client
-            .request(method, &format!("https://{}/api/v1/{}{}", self.host, leading_slash, path))
-            .header(self.api_key.clone().to_header())
+        let mut builder = self.r_client
+            .request(method, &format!("https://{}/api/v1/{}{}", self.host, leading_slash, path));
+            
+        builder.header(self.api_key.clone().to_header());
+
+        builder
     }
 }

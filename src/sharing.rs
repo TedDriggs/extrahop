@@ -5,8 +5,6 @@
 use std::collections::HashMap;
 use std::default::Default;
 
-use serde::{Serialize, Deserialize};
-
 use {Patch, Username, UserGroupId};
 
 /// A set of permissions grantable to a user or group.
@@ -26,7 +24,7 @@ fromstr_deserialize!(Role);
 
 /// A representation of a sharing structure.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-pub struct Sharing<R: Serialize + Deserialize> {
+pub struct Sharing<R> {
     /// The access level guaranteed to all authenticated users on the appliance.
     #[serde(skip_serializing_if="Option::is_none")]
     pub anyone: Option<R>,
