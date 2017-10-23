@@ -26,7 +26,7 @@ pub struct Request {
     pub walks: Vec<Walk>,
 
     /// The set of metrics should drive the weight of an edge.
-    pub weight_strategy: WeightStrategy,
+    pub weighting: Weighting,
 
     /// The additional data to return for each edge.
     #[serde(skip_serializing_if = "Vec::is_empty")]
@@ -55,15 +55,23 @@ impl From<Walk> for Request {
 /// The type of metrics that should be used to compute edge weight.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
-pub enum WeightStrategy {
+pub enum Weighting {
+    /// The number of bytes transferred in both directions between the two peers.
+    /// This is the default strategy.
     Bytes,
+    
+    /// The number of connections *established* during the time interval.
+    ///
+    /// This does not include connections opened before the query interval,
+    /// so results may be lower than expected, especially for protocols with
+    /// long-lived connections.
     Connections,
     Turns,
 }
 
-impl Default for WeightStrategy {
+impl Default for Weighting {
     fn default() -> Self {
-        WeightStrategy::Bytes
+        Weighting::Bytes
     }
 }
 
