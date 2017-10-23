@@ -1,3 +1,9 @@
+## Not Yet Released
+
+### Improvements
+- Added `activitymap` module for loading activity map edges
+- Added `QueryTime` to safely work with possibly-unitized time values for metrics and records requests
+
 ## 0.2.4
 
 ### Improvements
