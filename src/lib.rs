@@ -11,6 +11,9 @@
 //! level.
 
 #[macro_use]
+extern crate derive_builder;
+
+#[macro_use]
 extern crate error_chain;
 
 extern crate reqwest;
@@ -30,6 +33,7 @@ mod traits;
 mod user;
 mod user_group;
 
+pub mod activitymap;
 pub mod errors;
 pub mod sharing;
 
