@@ -24,10 +24,12 @@ error_chain! {
     }
     
     errors {
+        #[doc = "A string was provided that did not parse as a complete Authorization header, including the scheme and prefix"]
         ApiKeyParseError {
             description("The provided string was not a complete API key header including `ExtraHop apikey=`. Did you mean ApiKey::from?")
         }
 
+        #[doc = "A query time string was provided that doesn't match the supported format in [`QueryTime`](../enum.QueryTime.html)."]
         QueryTimeParseError {
             description("The provided string was not a unitized time expression understood by the ExtraHop platform")
         }
