@@ -27,6 +27,10 @@ error_chain! {
         ApiKeyParseError {
             description("The provided string was not a complete API key header including `ExtraHop apikey=`. Did you mean ApiKey::from?")
         }
+
+        QueryTimeParseError {
+            description("The provided string was not a unitized time expression understood by the ExtraHop platform")
+        }
     }
 }
 
