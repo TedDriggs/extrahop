@@ -1,4 +1,10 @@
-//! Types for creating an activity map query request.
+//! Types for creating and serializing an activity map query request.
+//!
+//! # Serialization & Deserialization
+//! All types in this module support serialization and deserialization via `serde`. 
+//! Types generally try to only serialize properties that differ from the backend 
+//! defaults; this should reduce the size of the serialized object and improve 
+//! readability.
 
 use std::ops::Index;
 
@@ -8,9 +14,11 @@ use serde::ser::SerializeSeq;
 use ::Oid;
 use activitymap::rsp::Appearance;
 
-/// Envelope for an ad-hoc activity map query. If constructed with struct literal
-/// syntax, `Request::default()` _must_ be used to ensure source compatibility with
-/// future library updates.
+/// Envelope for an ad-hoc activity map query.
+///
+/// # Construction
+/// If constructed with struct literal syntax, `Request::default()` _must_ 
+/// be used to ensure source compatibility with future library updates.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Default, Builder)]
 #[builder(default)]
 pub struct Request {
@@ -115,14 +123,17 @@ impl Serialize for WalkOrigin {
     fn serialize<S: Serializer>(&self, s: S) -> Result<S::Ok, S::Error> {
         match *self {
             WalkOrigin::All => {
+                /// The backend API overloads the "object_type" field to accept
+                /// "all_devices" in walk origins. Since "all_devices" isn't a
+                /// valid type in other contexts, we hide that knowledge here.
                 #[derive(Serialize)]
                 struct AllDevices {
                     object_type: &'static str
                 };
 
-                (AllDevices {
+                (vec![AllDevices {
                     object_type: "all_devices"
-                }).serialize(s)
+                }]).serialize(s)
             },
             WalkOrigin::Specific(ref sources) => {
                 let mut seq = s.serialize_seq(Some(sources.len()))?;
@@ -158,10 +169,12 @@ impl Source {
         }
     }
 
+    /// Create a new `Source` instance for a device.
     pub fn device(id: Oid) -> Self {
         Source::new(ObjectType::Device, id)
     }
 
+    /// Create a new `Source` instance for a device group.
     pub fn device_group(id: Oid) -> Self {
         Source::new(ObjectType::DeviceGroup, id)
     }
@@ -180,6 +193,17 @@ pub enum ObjectType {
     ActivityGroup,
 }
 
+/// A traversal instruction which can find new edges or protocols to include in
+/// an activity map.
+///
+/// Each step moves from all the devices found in the previous step along the 
+/// specified relationships, and then prunes the found edges based on additional
+/// filters such as `peer_in` and `peer_not_in`.
+///
+/// # Notes
+/// * If `relationships` is set to a single protocol and role pair, such as "http server",
+///   it is not necessary to also apply a `peer_in` filter for the HTTP Servers activity
+///   group.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Builder)]
 #[serde(default)]
 #[builder(default, setter(into))]
@@ -224,6 +248,7 @@ pub struct Relationship {
 }
 
 impl Relationship {
+    /// Create a new `Relationship` for the specified protocol and role.
     pub fn new<P: Into<Protocol>>(protocol: P, role: Role) -> Self {
         Self {
             role: role,
@@ -232,6 +257,8 @@ impl Relationship {
     }
 }
 
+/// Create a relationship matching all peers over the specified protocol, regardless
+/// of which device fulfilled which role.
 impl From<Protocol> for Relationship {
     fn from(val: Protocol) -> Self {
         Relationship::new(val, Role::Any)
@@ -248,6 +275,7 @@ impl From<Role> for Relationship {
     }
 }
 
+/// The role an endpoint is able to fill in a network transaction.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub enum Role {
@@ -269,7 +297,8 @@ impl Default for Role {
 }
 
 /// A protocol name that will be used to filter the edges traversed during the walk.
-/// Note that unlike `rsp::ProtocolStack`, this is a single string and not a full stack.
+///
+/// Unlike `rsp::ProtocolStack`, this is a single string and not a full stack.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Protocol(pub String);
 
@@ -293,7 +322,7 @@ mod tests {
     #[test]
     fn source_list_serialize_all_devices() {
         assert_eq!(
-            r#"{"object_type":"all_devices"}"#,
+            r#"[{"object_type":"all_devices"}]"#,
             serde_json::to_string(&WalkOrigin::All).unwrap()
         );
     }
