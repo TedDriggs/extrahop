@@ -43,7 +43,7 @@ mod tests {
     #[test]
     fn it_works() {
         let request = req::Request {
-            from: 0,
+            from: 0.into(),
             walks: vec![req::Walk {
                 origins: vec![Source::device(Oid::new(14))].into(),
                 steps: vec![

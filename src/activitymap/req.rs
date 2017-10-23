@@ -11,7 +11,7 @@ use std::ops::Index;
 use serde::{Serialize, Serializer};
 use serde::ser::SerializeSeq;
 
-use ::Oid;
+use ::{Oid, QueryTime};
 use activitymap::rsp::Appearance;
 
 /// Envelope for an ad-hoc activity map query.
@@ -19,15 +19,15 @@ use activitymap::rsp::Appearance;
 /// # Construction
 /// If constructed with struct literal syntax, `Request::default()` _must_ 
 /// be used to ensure source compatibility with future library updates.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Default, Builder)]
-#[builder(default)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default, Builder)]
+#[builder(default, setter(into))]
 pub struct Request {
     /// The absolute or relative timestamp at which the query should start.
-    pub from: i64,
+    pub from: QueryTime,
 
     /// The absolute or relative timestmap at which the query should end. If not set,
     /// defaults to the current packet time of the appliance.
-    pub until: i64,
+    pub until: QueryTime,
 
     /// The traversals that should be performed across the topology. Results from all
     /// walks will be merged into a single set of edges in the response. 
