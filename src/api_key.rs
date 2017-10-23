@@ -24,7 +24,7 @@ static FULL_PREFIX: &'static str = "ExtraHop apikey=";
 /// use extrahop::ApiKey;
 ///
 /// let header = Authorization(ApiKey::new("your-key"));
-/// let _req = reqwest::Client::new().unwrap().get("https://extrahop.com/api/v1/devices").header(header).send();
+/// let _req = reqwest::Client::new().get("https://extrahop.com/api/v1/devices").header(header).send();
 /// # }
 /// ```
 ///
