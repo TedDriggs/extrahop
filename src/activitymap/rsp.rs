@@ -121,6 +121,13 @@ pub struct Edge {
     pub annotations: EdgeAnnotations,
 }
 
+impl Edge {
+    /// Returns true if the edge contains the specified object ID.
+    pub fn contains(&self, oid: &Oid) -> bool {
+        self.from == *oid || self.to == *oid
+    }
+}
+
 /// Additional data about the edge which can be asked for in the request.
 /// Properties should have a value of `Some` when their key was present
 /// in the request, though the contents may themselves be empty.
