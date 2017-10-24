@@ -10,7 +10,7 @@ use Oid;
 /// A successful response to a single topology API request.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(default)]
-pub struct ApiResponse {
+pub struct Response {
     /// Non-fatal errors encountered during the construction of the map.
     /// Items in this list indicate that the returned topology may be incomplete.
     pub warnings: Vec<Error>,
@@ -22,7 +22,7 @@ pub struct ApiResponse {
     pub edges: Vec<Edge>,
 }
 
-impl ApiResponse {
+impl Response {
     /// Computes the set of nodes in the response.
     pub fn nodes(&self) -> HashSet<Oid> {
         let mut oids = HashSet::new();
@@ -46,9 +46,9 @@ impl ApiResponse {
     }
 }
 
-impl Default for ApiResponse {
+impl Default for Response {
     fn default() -> Self {
-        ApiResponse {
+        Response {
             warnings: vec![],
             from: 0,
             until: 0,
@@ -57,7 +57,7 @@ impl Default for ApiResponse {
     }
 }
 
-impl IntoIterator for ApiResponse {
+impl IntoIterator for Response {
     type Item = Edge;
     type IntoIter = vec::IntoIter<Edge>;
 
@@ -66,7 +66,7 @@ impl IntoIterator for ApiResponse {
     }
 }
 
-impl<'a> IntoIterator for &'a ApiResponse {
+impl<'a> IntoIterator for &'a Response {
     type Item = &'a Edge;
     type IntoIter = slice::Iter<'a, Edge>;
 
