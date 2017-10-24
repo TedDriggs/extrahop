@@ -37,7 +37,7 @@ pub use self::req::{Source, Step, Walk, WalkOrigin};
 pub use self::req::Request;
 
 #[doc(inline)]
-pub use self::rsp::Response;
+pub use self::rsp::{Response, Edge};
 
 #[cfg(test)]
 mod tests {
