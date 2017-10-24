@@ -31,7 +31,13 @@
 pub mod req;
 pub mod rsp;
 
-pub use self::req::{Request, Source, Step, Walk, WalkOrigin};
+pub use self::req::{Source, Step, Walk, WalkOrigin};
+
+#[doc(inline)]
+pub use self::req::Request;
+
+#[doc(inline)]
+pub use self::rsp::Response;
 
 #[cfg(test)]
 mod tests {
