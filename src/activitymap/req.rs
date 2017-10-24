@@ -109,6 +109,15 @@ pub struct Walk {
     pub steps: Vec<Step>,
 }
 
+impl Default for Walk {
+    fn default() -> Self {
+        Walk {
+            origins: WalkOrigin::All,
+            steps: vec![],
+        }
+    }
+}
+
 /// Sets the origins for a walk.
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
 #[serde(untagged)]
@@ -163,21 +172,21 @@ pub struct Source {
 
 impl Source {
     /// Create a new `Source` instance.
-    pub fn new(object_type: ObjectType, id: Oid) -> Self {
+    pub fn new<I: Into<Oid>>(object_type: ObjectType, id: I) -> Self {
         Source {
             object_type: object_type,
-            object_id: id,
+            object_id: id.into(),
         }
     }
 
     /// Create a new `Source` instance for a device.
-    pub fn device(id: Oid) -> Self {
-        Source::new(ObjectType::Device, id)
+    pub fn device<I: Into<Oid>>(id: I) -> Self {
+        Source::new(ObjectType::Device, id.into())
     }
 
     /// Create a new `Source` instance for a device group.
-    pub fn device_group(id: Oid) -> Self {
-        Source::new(ObjectType::DeviceGroup, id)
+    pub fn device_group<I: Into<Oid>>(id: I) -> Self {
+        Source::new(ObjectType::DeviceGroup, id.into())
     }
 }
 

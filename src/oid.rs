@@ -13,3 +13,9 @@ impl Oid {
         format!("{}", self.0)
     }
 }
+
+impl From<u64> for Oid {
+    fn from(val: u64) -> Self {
+        Oid::new(val)
+    }
+}
