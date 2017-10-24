@@ -21,6 +21,7 @@ use activitymap::rsp::Appearance;
 /// be used to ensure source compatibility with future library updates.
 #[derive(Debug, Clone, Serialize, Deserialize, Default, Builder)]
 #[builder(default, setter(into))]
+#[serde(default)]
 pub struct Request {
     /// The absolute or relative timestamp at which the query should start.
     pub from: QueryTime,
