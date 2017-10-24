@@ -6,7 +6,8 @@
 /// traits, rather than directly.
 ///
 /// ```rust
-/// let _time: QueryTime = -30000.into();
+/// # use extrahop::QueryTime;
+/// let _time: QueryTime = (-30000 as i64).into();
 /// let _other: QueryTime = "-30m".into();
 /// ```
 #[derive(Debug, Clone, Serialize, Deserialize)]
