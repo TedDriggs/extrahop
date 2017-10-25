@@ -1,3 +1,12 @@
+use regex::Regex;
+
+use ErrorKind;
+
+lazy_static! {
+    static ref REL_VALIDATOR: Regex = Regex::new(r"^-\d+(?:ms|s|m|h|d|w|y)?$")
+        .expect("Static regex should be valid");
+}
+
 /// Represents an absolute or relative time sent to an ExtraHop appliance
 /// as part of a query.
 ///
@@ -7,7 +16,7 @@
 ///
 /// ```rust
 /// # use extrahop::QueryTime;
-/// let _time: QueryTime = (-30000 as i64).into();
+/// let _time: QueryTime = (-30000).into();
 /// let _other: QueryTime = "-30m".into();
 /// ```
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -37,7 +46,19 @@ impl QueryTime {
         !self.is_relative()
     }
 
-    /// Check that a query time specification will be accepted by the appliance.
+    /// Check that a query time specification will be accepted by the appliance,
+    /// returning the unmodified query time if so, and otherwise returning an error.
+    ///
+    /// This function internally calls `QueryTime::is_valid`.
+    pub fn validate(self) -> ::Result<Self> {
+        if self.is_valid() {
+            Ok(self)
+        } else {
+            bail!(ErrorKind::QueryTimeParseError)
+        }
+    }
+
+    /// Check if a query time is valid.
     ///
     /// # Caution
     /// This method attempts to reimplement the appliance's own format checking
@@ -46,9 +67,17 @@ impl QueryTime {
     ///
     /// # Validation
     /// * Numeric time values are allowed without further inspection
-    /// * Unitized time values must adhere to this expression: `^-?\d+(?:ms|s|m|h|d|y)?$`
-    pub fn validate(self) -> ::Result<Self> {
-        Ok(self)
+    /// * Relative unitized time values must adhere to this expression: `^-\d+(?:ms|s|m|h|d|y)?$`
+    /// * Absolute unitized time values must be composed of only digits
+    pub fn is_valid(&self) -> bool {
+        match *self {
+            QueryTime::Milliseconds(_) => true,
+            QueryTime::Unitized(ref val) => {
+                // Check if the time is a relative string, because that's the 95% case
+                // If that fails, then look to see if we've received an absolute time
+                REL_VALIDATOR.is_match(&val) || val.chars().all(|c| c.is_digit(10))
+            }
+        }
     }
 }
 
@@ -66,7 +95,7 @@ impl From<i64> for QueryTime {
 
 impl<'a> From<&'a str> for QueryTime {
     fn from(val: &str) -> Self {
-        QueryTime::Unitized(String::from(val))
+        QueryTime::from(String::from(val))
     }
 }
 
