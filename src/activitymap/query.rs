@@ -321,8 +321,8 @@ impl Default for Role {
 /// A protocol name that will be used to filter the edges traversed during the walk.
 ///
 /// Unlike `rsp::ProtocolStack`, this is a single string and not a full stack.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-pub struct Protocol(pub String);
+#[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize)]
+pub struct Protocol(String);
 
 impl<'a> From<&'a str> for Protocol {
     fn from(val: &str) -> Self {
