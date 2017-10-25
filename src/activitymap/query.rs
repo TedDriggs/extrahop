@@ -260,9 +260,10 @@ impl Builder for Step {
 
 /// A combination of protocol and peer role which can match a connection between devices.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Default)]
+#[serde(default)]
 pub struct Relationship {
     /// The role of the peer device in the relationship to be discovered.
-    #[serde(default, skip_serializing_if = "Role::is_default")]
+    #[serde(skip_serializing_if = "Role::is_default")]
     pub role: Role,
     /// The protocol that must be spoken between the start device and peer to include.
     #[serde(skip_serializing_if = "Option::is_none")]
