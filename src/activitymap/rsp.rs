@@ -102,7 +102,10 @@ impl Error {
     }
 }
 
-/// A connection between two nodes in a directed graph.
+/// A connection between two devices in an activity map API response.
+///
+/// An edge goes from client to server regardless of the direction it was
+/// traversed during the walk.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Edge {
     /// The "client" device in the edge. This may be the device on which
@@ -190,8 +193,15 @@ pub struct ProtocolAnnotation {
 /// ```text
 /// [L3Protocol, L4Protocol, L7Protocol+]
 /// ```
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct ProtocolStack(Vec<String>);
+
+impl ProtocolStack {
+    /// Get the protocols in the stack in ascending OSI stack level.
+    pub fn protocols(&self) -> &[String] {
+        &self.0
+    }
+}
 
 impl fmt::Display for ProtocolStack {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
@@ -208,7 +218,6 @@ impl fmt::Display for ProtocolStack {
     }
 }
 
-/// Convenience impl for testing `ProtocolStack`
 impl From<Vec<&'static str>> for ProtocolStack {
     fn from(vals: Vec<&'static str>) -> Self {
         ProtocolStack(vals.into_iter().map(String::from).collect())
