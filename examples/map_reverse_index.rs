@@ -9,8 +9,7 @@ extern crate serde;
 use std::collections::HashMap;
 
 use extrahop::{ApiKey, ApiResponse, Client, Oid};
-use extrahop::activitymap::{Request, Response};
-use extrahop::activitymap::rsp::Edge;
+use extrahop::activitymap::{Query, Response, Edge};
 
 /// An activity map body with a map of node IDs to the edges in which they appear.
 #[derive(Clone)]
@@ -76,9 +75,9 @@ fn main() {
     // However, the client can be reused to make many requests.
     let client = Client::new("your-host", ApiKey::new("YOUR-KEY"));
 
-    let query = Request {
+    let query = Query {
         from: (-30000).into(),
-        ..Request::default()
+        ..Default::default()
     };
 
     let rsp: IndexedTopology = client

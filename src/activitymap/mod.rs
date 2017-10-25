@@ -9,32 +9,28 @@
 //!
 //! ## Using Builders
 //! ```rust
-//! use extrahop::Oid;
-//! use extrahop::activitymap::req::*;
+//! use extrahop::{Builder, Oid};
+//! use extrahop::activitymap::{self, Walk, Source, Step};
 //!
 //! // Create a request for the last half hour, starting from device 15 and
 //! // finding all its immediate peers. The default weight strategy will be
 //! // used, and no extra annotations were requested.
-//! let _ = RequestBuilder::default()
+//! let _ = activitymap::Query::builder()
 //!             .from(-30000)
 //!             .walks(vec![
-//!                 WalkBuilder::default()
+//!                 Walk::builder()
 //!                     .origins(vec![Source::device(Oid::new(15))])
 //!                     .steps(vec![Step::default()])
-//!                     .build()
-//!                     .unwrap()
+//!                     .build().unwrap()
 //!             ])
-//!             .build()
-//!             .unwrap();
+//!             .build().unwrap();
 //! ```
 
-pub mod req;
+pub mod query;
 pub mod rsp;
 
-pub use self::req::{Source, Step, Walk, WalkOrigin};
-
 #[doc(inline)]
-pub use self::req::Request;
+pub use self::query::{Query, Source, Step, Walk, WalkOrigin};
 
 #[doc(inline)]
 pub use self::rsp::{Response, Edge};
@@ -44,13 +40,14 @@ mod tests {
     use serde_json;
 
     use ::Oid;
-    use super::req::{self, Step, Relationship, Role, Source};
+    use super::{Query, Step, Source, Walk};
+    use super::query::{EdgeAnnotation, Role, Relationship};
 
     #[test]
     fn it_works() {
-        let request = req::Request {
+        let request = Query {
             from: 0.into(),
-            walks: vec![req::Walk {
+            walks: vec![Walk {
                 origins: vec![Source::device(Oid::new(14))].into(),
                 steps: vec![
                     Step {
@@ -59,7 +56,7 @@ mod tests {
                     },
                 ]
             }],
-            edge_annotations: vec![req::EdgeAnnotation::Protocols],
+            edge_annotations: vec![EdgeAnnotation::Protocols],
             ..Default::default()
         };
 

@@ -5,8 +5,8 @@ extern crate reqwest;
 
 use std::io;
 
-use extrahop::{ApiKey, ApiResponse, Client, Result};
-use extrahop::activitymap::{self, req, Edge, Response};
+use extrahop::{ApiKey, ApiResponse, Builder, Client, Result};
+use extrahop::activitymap::{query, Query, Source, Edge, Response, Walk};
 
 fn write_edge(f: &mut io::Write, edge: &Edge) -> io::Result<()> {
     writeln!(
@@ -22,16 +22,16 @@ fn main() {
     let client = Client::new("your-extrahop", ApiKey::new("YOUR-KEY"));
 
     // Create topology query
-    let request = req::RequestBuilder::default()
+    let request = Query::builder()
         .from("-1w")
         .walks(vec![
-            req::Walk {
-                origins: vec![req::Source::device_group(1)].into(),
+            Walk {
+                origins: vec![Source::device_group(1)].into(),
                 steps: vec![Default::default()],
                 ..Default::default()
             },
         ])
-        .edge_annotations(vec![req::EdgeAnnotation::Protocols])
+        .edge_annotations(vec![query::EdgeAnnotation::Protocols])
         .build()
         .unwrap();
 
@@ -44,7 +44,7 @@ fn main() {
     if let Ok(edges) = response {
         let mut stdout = io::stdout();
         for edge in &edges {
-            write_edge(&mut stdout, edge);
+            write_edge(&mut stdout, edge).unwrap();
         }
     }
 }

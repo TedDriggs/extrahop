@@ -11,18 +11,18 @@ use std::ops::Index;
 use serde::{Serialize, Serializer};
 use serde::ser::SerializeSeq;
 
-use ::{Oid, QueryTime};
+use ::{Builder, Oid, QueryTime};
 use activitymap::rsp::Appearance;
 
 /// Envelope for an ad-hoc activity map query.
 ///
 /// # Construction
-/// If constructed with struct literal syntax, `Request::default()` _must_ 
+/// If constructed with struct literal syntax, `Query::default()` _must_ 
 /// be used to ensure source compatibility with future library updates.
 #[derive(Debug, Clone, Serialize, Deserialize, Default, Builder)]
 #[builder(default, setter(into))]
 #[serde(default)]
-pub struct Request {
+pub struct Query {
     /// The absolute or relative timestamp at which the query should start.
     pub from: QueryTime,
 
@@ -44,7 +44,7 @@ pub struct Request {
 
 /// Find a step configuration for an `rsp::Appearance` from the edge list in
 /// a query response.
-impl Index<Appearance> for Request {
+impl Index<Appearance> for Query {
     type Output = Step;
 
     fn index(&self, idx: Appearance) -> &Self::Output {
@@ -52,13 +52,17 @@ impl Index<Appearance> for Request {
     }
 }
 
-impl From<Walk> for Request {
+impl From<Walk> for Query {
     fn from(walk: Walk) -> Self {
-        Request {
+        Query {
             walks: vec![walk],
             ..Default::default()
         }
     }
+}
+
+impl Builder for Query {
+    type Builder = QueryBuilder;
 }
 
 /// The type of metrics that should be used to compute edge weight.
@@ -116,6 +120,10 @@ impl Default for Walk {
             steps: vec![],
         }
     }
+}
+
+impl Builder for Walk {
+    type Builder = WalkBuilder;
 }
 
 /// Sets the origins for a walk.
@@ -246,6 +254,10 @@ impl Default for Step {
     }
 }
 
+impl Builder for Step {
+    type Builder = StepBuilder;
+}
+
 /// A combination of protocol and peer role which can match a connection between devices.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Default)]
 pub struct Relationship {
@@ -287,7 +299,7 @@ impl From<Role> for Relationship {
 
 /// The role an endpoint is able to fill in a network transaction.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "snake_case")]
 pub enum Role {
     Client,
     Server,

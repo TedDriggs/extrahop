@@ -43,6 +43,6 @@ pub use client::Client;
 pub use errors::{Error, ErrorKind, Result, ResultExt};
 pub use oid::Oid;
 pub use query_time::QueryTime;
-pub use traits::{ApiResponse, Patch};
+pub use traits::{ApiResponse, Builder, Patch};
 pub use user::Username;
 pub use user_group::UserGroupId;
