@@ -33,6 +33,13 @@ pub enum QueryTime {
 
 impl QueryTime {
     /// Returns `true` if the query time is relative to the appliance's "now".
+    ///
+    /// # Examples
+    /// ```rust
+    /// # use extrahop::QueryTime;
+    /// assert!(QueryTime::from("-30m").is_relative());
+    /// assert!(QueryTime::from(0).is_relative());
+    /// ```
     pub fn is_relative(&self) -> bool {
         // Non-positive values are relative times.
         match *self {
@@ -69,6 +76,22 @@ impl QueryTime {
     /// * Numeric time values are allowed without further inspection
     /// * Relative unitized time values must adhere to this expression: `^-\d+(?:ms|s|m|h|d|y)?$`
     /// * Absolute unitized time values must be composed of only digits
+    ///
+    /// # Examples
+    /// ```rust
+    /// # use extrahop::QueryTime;
+    /// // Valid
+    /// assert!(QueryTime::from(0).is_valid());
+    /// assert!(QueryTime::from(-25000).is_valid());
+    /// assert!(QueryTime::from("-1m").is_valid());
+    /// assert!(QueryTime::from("-50").is_valid());
+    /// assert!(QueryTime::from("-10ms").is_valid());
+    /// assert!(QueryTime::from("0").is_valid());
+    ///
+    /// // Invalid
+    /// assert!(!QueryTime::from("10m").is_valid());
+    /// assert!(!QueryTime::from("1-0").is_valid());
+    /// ```
     pub fn is_valid(&self) -> bool {
         match *self {
             QueryTime::Milliseconds(_) => true,
@@ -99,8 +122,18 @@ impl<'a> From<&'a str> for QueryTime {
     }
 }
 
+/// Convert a string to a query time. This may convert the query time to a
+/// number if doing so would not change readability in the serialized form.
 impl From<String> for QueryTime {
     fn from(val: String) -> Self {
-        QueryTime::Unitized(val)
+        if val.chars().all(|c| c.is_digit(10) || c == '-') {
+            if let Ok(ms) = val.parse() {
+                QueryTime::Milliseconds(ms)
+            } else {
+                QueryTime::Unitized(val)
+            }
+        } else {
+            QueryTime::Unitized(val)
+        }
     }
 }
