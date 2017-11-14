@@ -14,9 +14,11 @@ pub struct Response {
     /// Non-fatal errors encountered during the construction of the map.
     /// Items in this list indicate that the returned topology may be incomplete.
     pub warnings: Vec<Error>,
-    /// The absolute packet time at which data starts for the response.
+    /// The absolute UTC packet time at which data starts for the response, in milliseconds
+    /// since epoch.
     pub from: u64,
-    /// The absolute packet time at which data ends for the response.
+    /// The absolute UTC packet time at which data ends for the response, in milliseconds
+    /// since epoch.
     pub until: u64,
     /// The collection of edges which matched the activity map query.
     pub edges: Vec<Edge>,
