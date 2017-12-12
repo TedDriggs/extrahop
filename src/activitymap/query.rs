@@ -1,9 +1,9 @@
 //! Types for creating and serializing an activity map query request.
 //!
 //! # Serialization & Deserialization
-//! All types in this module support serialization and deserialization via `serde`. 
-//! Types generally try to only serialize properties that differ from the backend 
-//! defaults; this should reduce the size of the serialized object and improve 
+//! All types in this module support serialization and deserialization via `serde`.
+//! Types generally try to only serialize properties that differ from the backend
+//! defaults; this should reduce the size of the serialized object and improve
 //! readability.
 
 use std::ops::Index;
@@ -17,7 +17,7 @@ use activitymap::rsp::Appearance;
 /// Envelope for an ad-hoc activity map query.
 ///
 /// # Construction
-/// If constructed with struct literal syntax, `Query::default()` _must_ 
+/// If constructed with struct literal syntax, `Query::default()` _must_
 /// be used to ensure source compatibility with future library updates.
 #[derive(Debug, Clone, Serialize, Deserialize, Default, Builder)]
 #[builder(default, setter(into))]
@@ -31,7 +31,7 @@ pub struct Query {
     pub until: QueryTime,
 
     /// The traversals that should be performed across the topology. Results from all
-    /// walks will be merged into a single set of edges in the response. 
+    /// walks will be merged into a single set of edges in the response.
     pub walks: Vec<Walk>,
 
     /// The set of metrics should drive the weight of an edge.
@@ -72,7 +72,7 @@ pub enum Weighting {
     /// The number of bytes transferred in both directions between the two peers.
     /// This is the default strategy.
     Bytes,
-    
+
     /// The number of connections *established* during the time interval.
     ///
     /// This does not include connections opened before the query interval,
@@ -88,7 +88,7 @@ impl Default for Weighting {
     }
 }
 
-/// Flags to opt into additional data about the topology from the appliance. 
+/// Flags to opt into additional data about the topology from the appliance.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum EdgeAnnotation {
@@ -117,7 +117,7 @@ impl Default for Walk {
     fn default() -> Self {
         Walk {
             origins: WalkOrigin::All,
-            steps: vec![],
+            steps: vec![Step::default()],
         }
     }
 }
@@ -214,7 +214,7 @@ pub enum ObjectType {
 /// A traversal instruction which can find new edges or protocols to include in
 /// an activity map.
 ///
-/// Each step moves from all the devices found in the previous step along the 
+/// Each step moves from all the devices found in the previous step along the
 /// specified relationships, and then prunes the found edges based on additional
 /// filters such as `peer_in` and `peer_not_in`.
 ///

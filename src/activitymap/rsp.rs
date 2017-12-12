@@ -3,6 +3,12 @@
 use std::{cmp, fmt, vec, slice};
 use std::collections::HashSet;
 
+#[cfg(feature = "petgraph")]
+use petgraph::Graph;
+
+#[cfg(feature = "petgraph")]
+use std::collections::HashMap;
+
 use serde_json;
 
 use Oid;
@@ -77,6 +83,28 @@ impl<'a> IntoIterator for &'a Response {
     }
 }
 
+#[cfg(feature = "petgraph")]
+impl From<Response> for Graph<Oid, Edge> {
+    fn from(val: Response) -> Self {
+        let mut graph = Graph::new();
+        let nodes = val.nodes();
+        let mut node_idx = HashMap::with_capacity(nodes.len());
+        for node in nodes {
+            node_idx.insert(node.clone(), graph.add_node(node));
+        }
+
+        for edge in val.edges {
+            graph.add_edge(
+                *node_idx.get(&edge.from).unwrap(),
+                *node_idx.get(&edge.to).unwrap(),
+                edge
+            );
+        }
+
+        graph
+    }
+}
+
 /// An error or warning returned by the API.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Error {
@@ -120,7 +148,7 @@ pub struct Edge {
 
     /// The "importance" of the edge; larger numbers are more important.
     pub weight: usize,
-    
+
     /// Additional data about the edge which was asked for in the request.
     #[serde(default)]
     pub annotations: EdgeAnnotations,
@@ -130,6 +158,10 @@ impl Edge {
     /// Returns true if the edge contains the specified object ID.
     pub fn contains(&self, oid: &Oid) -> bool {
         self.from == *oid || self.to == *oid
+    }
+
+    pub fn to_tuple(&self) -> (Oid, Oid) {
+        (self.from.clone(), self.to.clone())
     }
 }
 
