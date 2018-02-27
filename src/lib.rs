@@ -11,8 +11,16 @@
 //! level.
 
 #[macro_use]
+extern crate derive_builder;
+
+#[macro_use]
 extern crate error_chain;
 
+#[macro_use]
+extern crate lazy_static;
+#[cfg(feature = "petgraph")]
+extern crate petgraph;
+extern crate regex;
 extern crate reqwest;
 extern crate serde;
 
@@ -31,6 +39,7 @@ mod traits;
 mod user;
 mod user_group;
 
+pub mod activitymap;
 pub mod errors;
 pub mod sharing;
 
@@ -39,6 +48,6 @@ pub use client::Client;
 pub use errors::{Error, ErrorKind, Result, ResultExt};
 pub use oid::Oid;
 pub use query_time::QueryTime;
-pub use traits::{ApiResponse, Patch};
+pub use traits::{ApiResponse, Builder, Patch};
 pub use user::Username;
 pub use user_group::UserGroupId;

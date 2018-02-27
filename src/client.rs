@@ -28,7 +28,7 @@ impl Client {
         &self.host
     }
 
-    /// Creates a GET request builder for the provided relative path with the 
+    /// Creates a GET request builder for the provided relative path with the
     /// `Authorization` header included.
     ///
     /// The path should not include the `/api/v1` prefix.
@@ -42,31 +42,31 @@ impl Client {
         self.request(Method::Get, path)
     }
 
-    /// Creates a POST request builder for the provided relative path with the 
+    /// Creates a POST request builder for the provided relative path with the
     /// `Authorization` header included.
     ///
     /// The path should not include the `/api/v1` prefix.
     pub fn post(&self, path: &str) -> RequestBuilder {
         self.request(Method::Post, path)
     }
-    
-    /// Creates a PATCH request builder for the provided relative path with the 
+
+    /// Creates a PATCH request builder for the provided relative path with the
     /// `Authorization` header included.
     ///
     /// The path should not include the `/api/v1` prefix.
     pub fn patch(&self, path: &str) -> RequestBuilder {
         self.request(Method::Patch, path)
     }
-    
-    /// Creates a PUT request builder for the provided relative path with the 
+
+    /// Creates a PUT request builder for the provided relative path with the
     /// `Authorization` header included.
     ///
     /// The path should not include the `/api/v1` prefix.
     pub fn put(&self, path: &str) -> RequestBuilder {
         self.request(Method::Put, path)
     }
-    
-    /// Creates a DELETE request builder for the provided relative path with the 
+
+    /// Creates a DELETE request builder for the provided relative path with the
     /// `Authorization` header included.
     ///
     /// The path should not include the `/api/v1/` prefix.
@@ -74,7 +74,7 @@ impl Client {
         self.request(Method::Delete, path)
     }
 
-    /// Creates a request builder for the provided relative path with the 
+    /// Creates a request builder for the provided relative path with the
     /// `Authorization` header included.
     ///
     /// The path should not include the `/api/v1` prefix.
@@ -91,10 +91,10 @@ impl Client {
     /// ```
     pub fn request(&self, method: Method, path: &str) -> RequestBuilder {
         let leading_slash = if path.starts_with("/") { "" } else { "/" };
-        
+
         let mut builder = self.r_client
-            .request(method, &format!("https://{}/api/v1/{}{}", self.host, leading_slash, path));
-            
+            .request(method, &format!("https://{}/api/v1{}{}", self.host, leading_slash, path));
+
         builder.header(self.api_key.clone().to_header());
 
         builder

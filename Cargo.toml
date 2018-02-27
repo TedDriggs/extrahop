@@ -14,6 +14,9 @@ categories = ["api-bindings"]
 travis-ci = { repository = "TedDriggs/extrahop" }
 
 [dependencies]
+derive_builder = "0.5.0"
+lazy_static = "0.2.9"
+regex = "0.2.2"
 reqwest = "0.8.0"
 serde = "1.0.15"
 serde_derive = "1.0.15"
@@ -23,3 +26,10 @@ serde_json = "1.0.3"
 version = "0.11.0"
 # Suppress backtraces due to perf concerns
 default-features = false
+
+[dependencies.petgraph]
+version = "0.4.10"
+optional = true
+
+[features]
+default = ["petgraph"]

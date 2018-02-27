@@ -26,6 +26,16 @@ pub trait ApiResponse : Sized {
     }
 }
 
+/// Create a new builder for the type implementing this trait.
+pub trait Builder {
+    type Builder: Default;
+
+    /// Creates the builder
+    fn builder() -> Self::Builder {
+        Default::default()
+    }
+}
+
 impl ApiResponse for Response {
     fn validate_status(mut self) -> Result<Response> {
         if !self.status().is_success() {
