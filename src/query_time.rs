@@ -16,7 +16,7 @@ lazy_static! {
 ///
 /// ```rust
 /// # use extrahop::QueryTime;
-/// let _time: QueryTime = (-30000).into();
+/// let _time: QueryTime = (-30000 as i64).into();
 /// let _other: QueryTime = "-30m".into();
 /// ```
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -65,7 +65,7 @@ impl QueryTime {
         }
     }
 
-    /// Check if a query time is valid.
+    /// Check that a query time specification will be accepted by the appliance.
     ///
     /// # Caution
     /// This method attempts to reimplement the appliance's own format checking
