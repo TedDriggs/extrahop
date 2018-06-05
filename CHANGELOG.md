@@ -1,4 +1,4 @@
-## Not Yet Released
+## 0.2.5
 
 ### Improvements
 - Added `activitymap` module for loading activity map edges
