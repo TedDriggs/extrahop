@@ -28,13 +28,13 @@ impl DashboardTransfer {
 }
 
 fn main() {
-    let client = Client::new("ehd-vm", ApiKey::new("YOUR KEY"));
-    let dashboards: Vec<Dashboard> =
-        client.get("/dashboards")
-            .send()
-            .validate_and_read()
-            .unwrap();
-    
+    let client = Client::danger_new_unverified("sample-vm", ApiKey::new("YOUR KEY")).unwrap();
+    let dashboards: Vec<Dashboard> = client
+        .get("/dashboards")
+        .send()
+        .validate_and_read()
+        .unwrap();
+
     let from_user = Some(Username::new("kenp"));
     let patch = DashboardTransfer::new(Username::new("setup"));
     for dashboard in dashboards {
@@ -44,11 +44,14 @@ fn main() {
                 .json(&patch)
                 .send()
                 .validate_status();
-                
+
             match transfer_result {
                 Err(Error(ErrorKind::Rest(rest), _)) => println!("Error: {}", rest),
                 Err(e) => println!("Error: {}", e),
-                Ok(..) => println!("Successfully transferred #{}, '{}'", dashboard.id, dashboard.name)
+                Ok(..) => println!(
+                    "Successfully transferred #{}, '{}'",
+                    dashboard.id, dashboard.name
+                ),
             };
         }
     }

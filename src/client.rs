@@ -23,6 +23,19 @@ impl Client {
         }
     }
 
+    /// Creates a new client with certificate verification disabled. This should only be used
+    /// when a human has passed an `--insecure` flag or the like.
+    pub fn danger_new_unverified<IS: Into<String>>(host: IS, api_key: ApiKey) -> ::Result<Self> {
+        let r_client = reqwest::Client::builder()
+            .danger_disable_hostname_verification()
+            .build()?;
+        Ok(Client {
+            host: host.into(),
+            api_key,
+            r_client,
+        })
+    }
+
     /// Gets the appliance's host string.
     pub fn host(&self) -> &str {
         &self.host
@@ -92,8 +105,10 @@ impl Client {
     pub fn request(&self, method: Method, path: &str) -> RequestBuilder {
         let leading_slash = if path.starts_with("/") { "" } else { "/" };
 
-        let mut builder = self.r_client
-            .request(method, &format!("https://{}/api/v1{}{}", self.host, leading_slash, path));
+        let mut builder = self.r_client.request(
+            method,
+            &format!("https://{}/api/v1{}{}", self.host, leading_slash, path),
+        );
 
         builder.header(self.api_key.clone().to_header());
 

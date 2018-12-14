@@ -1,3 +1,8 @@
+## 0.2.6
+
+### Improvements
+- Added `danger_new_unverified` to `Client` to support `--insecure` flag being exposed by other tools.
+
 ## 0.2.5
 
 ### Improvements
