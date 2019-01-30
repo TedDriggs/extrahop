@@ -1,3 +1,8 @@
+## 0.2.7
+
+### Improvements
+- Added `FromStr` impl for `QueryTime`
+
 ## 0.2.6
 
 ### Improvements

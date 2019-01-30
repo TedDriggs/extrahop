@@ -1,3 +1,4 @@
+use std::str::FromStr;
 use regex::Regex;
 
 use ErrorKind;
@@ -135,5 +136,13 @@ impl From<String> for QueryTime {
         } else {
             QueryTime::Unitized(val)
         }
+    }
+}
+
+impl FromStr for QueryTime {
+    type Err = ::Error;
+
+    fn from_str(v: &str) -> ::Result<Self> {
+        QueryTime::from(v).validate()
     }
 }
