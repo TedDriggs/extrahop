@@ -1,117 +1,117 @@
-use reqwest::{self, Method, RequestBuilder};
+use crate::{Error, Result};
+use reqwest::header::{HeaderMap, AUTHORIZATION};
+use reqwest::{Method, RequestBuilder};
+use url::Url;
 
-use ApiKey;
-
-/// A client for making authenticated requests to the ExtraHop REST API.
-///
-/// The client encapsulates the host name and API key needed to make calls to
-/// the appliance.
-#[derive(Debug)]
-pub struct Client {
+/// Builder to construct a `Client` with options set.
+pub struct ClientBuilder {
     host: String,
-    api_key: ApiKey,
-    r_client: reqwest::Client,
+    api_key: String,
+    disable_certs: Option<bool>,
 }
 
-impl Client {
-    /// Creates a new client which connects to the specified host using the provided key.
-    pub fn new<IS: Into<String>>(host: IS, api_key: ApiKey) -> Self {
-        Client {
+impl ClientBuilder {
+    /// Create a new builder.
+    ///
+    /// Validation of the host and API key is deferred until `build` is called, so this function
+    /// cannot fail.
+    pub fn new(host: impl Into<String>, api_key: impl Into<String>) -> Self {
+        Self {
             host: host.into(),
-            api_key: api_key,
-            r_client: reqwest::Client::new(),
+            api_key: api_key.into(),
+            disable_certs: None,
         }
     }
 
-    /// Creates a new client with certificate verification disabled. This should only be used
-    /// when a human has passed an `--insecure` flag or the like.
-    pub fn danger_new_unverified<IS: Into<String>>(host: IS, api_key: ApiKey) -> ::Result<Self> {
-        let r_client = reqwest::Client::builder()
-            .danger_disable_hostname_verification()
-            .build()?;
-        Ok(Client {
-            host: host.into(),
-            api_key,
-            r_client,
-        })
+    /// Turn off certificate validation.
+    pub fn dangerous_disable_cert_verification(mut self, disable: bool) -> Self {
+        self.disable_certs = Some(disable);
+        self
     }
 
-    /// Gets the appliance's host string.
-    pub fn host(&self) -> &str {
-        &self.host
-    }
-
-    /// Creates a GET request builder for the provided relative path with the
-    /// `Authorization` header included.
-    ///
-    /// The path should not include the `/api/v1` prefix.
-    ///
-    /// ```rust,no_run
-    /// # use extrahop::{ApiKey, Client};
-    /// let client = Client::new("extrahop.i.northwind.com", ApiKey::new("key"));
-    /// client.get("/whitelist/devices").send().unwrap();
-    /// ```
-    pub fn get(&self, path: &str) -> RequestBuilder {
-        self.request(Method::Get, path)
-    }
-
-    /// Creates a POST request builder for the provided relative path with the
-    /// `Authorization` header included.
-    ///
-    /// The path should not include the `/api/v1` prefix.
-    pub fn post(&self, path: &str) -> RequestBuilder {
-        self.request(Method::Post, path)
-    }
-
-    /// Creates a PATCH request builder for the provided relative path with the
-    /// `Authorization` header included.
-    ///
-    /// The path should not include the `/api/v1` prefix.
-    pub fn patch(&self, path: &str) -> RequestBuilder {
-        self.request(Method::Patch, path)
-    }
-
-    /// Creates a PUT request builder for the provided relative path with the
-    /// `Authorization` header included.
-    ///
-    /// The path should not include the `/api/v1` prefix.
-    pub fn put(&self, path: &str) -> RequestBuilder {
-        self.request(Method::Put, path)
-    }
-
-    /// Creates a DELETE request builder for the provided relative path with the
-    /// `Authorization` header included.
-    ///
-    /// The path should not include the `/api/v1/` prefix.
-    pub fn delete(&self, path: &str) -> RequestBuilder {
-        self.request(Method::Delete, path)
-    }
-
-    /// Creates a request builder for the provided relative path with the
-    /// `Authorization` header included.
-    ///
-    /// The path should not include the `/api/v1` prefix.
-    ///
-    /// ```rust,no_run
-    /// # extern crate reqwest;
-    /// # extern crate extrahop;
-    /// # use extrahop::{ApiKey, Client};
-    /// # fn main() {
-    /// use reqwest::Method;
-    /// let client = Client::new("extrahop", ApiKey::new("key".to_string()));
-    /// client.request(Method::Get, "/whitelist/devices").send().unwrap();
-    /// # }
-    /// ```
-    pub fn request(&self, method: Method, path: &str) -> RequestBuilder {
-        let leading_slash = if path.starts_with("/") { "" } else { "/" };
-
-        let mut builder = self.r_client.request(
-            method,
-            &format!("https://{}/api/v1{}{}", self.host, leading_slash, path),
+    pub fn build(self) -> Result<Client> {
+        let mut headers = HeaderMap::new();
+        headers.append(
+            AUTHORIZATION,
+            format!("ExtraHop apikey={}", self.api_key)
+                .parse()
+                .map_err(|_| Error::ApiKey)?,
         );
 
-        builder.header(self.api_key.clone().to_header());
+        Ok(Client {
+            base: format!("https://{}/api/", self.host).parse().unwrap(),
+            inner: reqwest::ClientBuilder::new()
+                .default_headers(headers)
+                .danger_accept_invalid_certs(self.disable_certs.unwrap_or_default())
+                .build()?,
+        })
+    }
+}
 
-        builder
+/// An asynchronous client to make requests to an ExtraHop system.
+///
+/// The client is linked to a specific ExtraHop API instance, identified by hostname.
+///
+/// # Paths
+/// Include the version in the URL when making requests, e.g. `v1/devices`. The client
+/// automatically adds the hostname and base.
+pub struct Client {
+    base: Url,
+    inner: reqwest::Client,
+}
+
+impl Client {
+    /// Create a new client for the specified host and API key with default settings.
+    ///
+    /// # Errors
+    /// This function returns an error if the hostname is invalid or the API key is the empty string.
+    pub fn new(host: impl Into<String>, api_key: impl Into<String>) -> Result<Self> {
+        ClientBuilder::new(host, api_key).build()
+    }
+
+    /// Create a new `ClientBuilder`.
+    pub fn builder(host: impl Into<String>, api_key: impl Into<String>) -> ClientBuilder {
+        ClientBuilder::new(host, api_key)
+    }
+
+    /// Get the host to which this `Client` is associated.
+    pub fn host(&self) -> &str {
+        self.base.host_str().expect("The base URL must have a host")
+    }
+
+    pub fn get(&self, path: impl AsRef<str>) -> Result<RequestBuilder> {
+        self.request(Method::GET, path)
+    }
+
+    pub fn post(&self, path: impl AsRef<str>) -> Result<RequestBuilder> {
+        self.request(Method::POST, path)
+    }
+
+    pub fn put(&self, path: impl AsRef<str>) -> Result<RequestBuilder> {
+        self.request(Method::PUT, path)
+    }
+
+    pub fn patch(&self, path: impl AsRef<str>) -> Result<RequestBuilder> {
+        self.request(Method::PATCH, path)
+    }
+
+    pub fn delete(&self, path: impl AsRef<str>) -> Result<RequestBuilder> {
+        self.request(Method::DELETE, path)
+    }
+
+    /// Create a request to send to the ExtraHop.
+    ///
+    /// # Example
+    /// ```rust,norun
+    /// use extrahop::Client;
+    /// use reqwest::Method;
+    ///
+    /// Client::new("extrahop", "123").unwrap().request(Method::GET, "v1/devices");
+    /// ```
+    pub fn request(&self, method: Method, path: impl AsRef<str>) -> Result<RequestBuilder> {
+        Ok(self.inner.request(
+            method,
+            self.base.join(path.as_ref().trim_start_matches('/'))?,
+        ))
     }
 }

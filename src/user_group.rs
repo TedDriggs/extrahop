@@ -1,3 +1,5 @@
+use serde::{Deserialize, Serialize};
+
 /// Canonical ID for a user group.
 ///
 /// # Examples
@@ -8,12 +10,10 @@
 pub struct UserGroupId(String);
 
 impl UserGroupId {
-    
     /// Creates a canonicalized user group ID.
     pub fn new<IS: Into<String>>(id: IS) -> Self {
         UserGroupId(id.into())
     }
-    
     /// Gets the group ID as a string.
     pub fn as_str(&self) -> &str {
         &self.0

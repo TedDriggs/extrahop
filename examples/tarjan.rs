@@ -1,14 +1,12 @@
-extern crate extrahop;
-extern crate petgraph;
-
-use extrahop::{ApiKey, ApiResponse, Client, Oid};
 use extrahop::activitymap::{Edge, Query, Response};
+use extrahop::{ApiResponse, Client, Oid};
 use petgraph::algo::tarjan_scc;
 
-fn main() {
+#[tokio::main]
+async fn main() -> anyhow::Result<()> {
     // Define the API client. No connection is made, as all requests go over HTTPS.
     // However, the client can be reused to make many requests.
-    let client = Client::new("YOUR-HOST", ApiKey::new("YOUR-KEY"));
+    let client = Client::new("YOUR-HOST", "YOUR-KEY")?;
 
     let query = Query {
         from: (-30000).into(),
@@ -16,12 +14,13 @@ fn main() {
         ..Query::default()
     };
 
-    let rsp: Response = client
-        .post("activitymaps/query")
+    let rsp = client
+        .post("v1/activitymaps/query")?
         .json(&query)
         .send()
-        .validate_and_read()
-        .expect("Query should produce a valid response");
+        .await?
+        .validate_and_read::<Response>()
+        .await?;
 
     if !rsp.is_complete() {
         println!("Warning; topology may be incomplete");
@@ -35,7 +34,8 @@ fn main() {
         println!("{:?}", scc);
     }
 
-    let largest_component = sccs.iter()
+    let largest_component = sccs
+        .iter()
         .max_by_key(|i| i.len())
         .map(|c| c.len())
         .unwrap_or(0);
@@ -46,4 +46,6 @@ fn main() {
         sccs.len(),
         largest_component
     );
+
+    Ok(())
 }

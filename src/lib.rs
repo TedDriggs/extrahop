@@ -11,43 +11,29 @@
 //! level.
 
 #[macro_use]
-extern crate derive_builder;
-
-#[macro_use]
-extern crate error_chain;
-
-#[macro_use]
-extern crate lazy_static;
-#[cfg(feature = "petgraph")]
-extern crate petgraph;
-extern crate regex;
-extern crate reqwest;
-extern crate serde;
-
-#[macro_use]
-extern crate serde_derive;
-extern crate serde_json;
-
-#[macro_use]
 mod macros;
 
-mod api_key;
+mod api_response;
 mod client;
+mod error;
 mod oid;
 mod query_time;
 mod traits;
 mod user;
 mod user_group;
 
+#[cfg(feature = "topology")]
 pub mod activitymap;
-pub mod errors;
+#[cfg(feature = "sharing")]
 pub mod sharing;
 
-pub use api_key::ApiKey;
+pub use api_response::ApiResponse;
 pub use client::Client;
-pub use errors::{Error, ErrorKind, Result, ResultExt};
+pub use error::{Error, RestError};
 pub use oid::Oid;
 pub use query_time::QueryTime;
-pub use traits::{ApiResponse, Builder, Patch};
+pub use traits::Patch;
 pub use user::Username;
 pub use user_group::UserGroupId;
+
+pub type Result<T> = std::result::Result<T, Error>;

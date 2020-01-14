@@ -5,10 +5,10 @@ extern crate reqwest;
 
 use std::io;
 
-use extrahop::{ApiKey, ApiResponse, Builder, Client, Result};
-use extrahop::activitymap::{query, Query, Source, Edge, Response, Walk};
+use extrahop::activitymap::{query, Edge, Query, Response, Source, Walk};
+use extrahop::{ApiResponse, Client};
 
-fn write_edge(f: &mut io::Write, edge: &Edge) -> io::Result<()> {
+fn write_edge(f: &mut dyn io::Write, edge: &Edge) -> io::Result<()> {
     writeln!(
         f,
         "{from}\t{to}\t{weight}",
@@ -18,33 +18,35 @@ fn write_edge(f: &mut io::Write, edge: &Edge) -> io::Result<()> {
     )
 }
 
-fn main() {
-    let client = Client::new("your-extrahop", ApiKey::new("YOUR-KEY"));
+#[tokio::main]
+#[allow(clippy::needless_update)]
+async fn main() -> anyhow::Result<()> {
+    let client = Client::new("your-extrahop", "YOUR-KEY")?;
 
     // Create topology query
     let request = Query::builder()
         .from("-1w")
-        .walks(vec![
-            Walk {
-                origins: vec![Source::device_group(1)].into(),
-                steps: vec![Default::default()],
-                ..Default::default()
-            },
-        ])
+        .walks(vec![Walk {
+            origins: vec![Source::device_group(1)].into(),
+            steps: vec![Default::default()],
+            ..Default::default()
+        }])
         .edge_annotations(vec![query::EdgeAnnotation::Protocols])
         .build()
         .unwrap();
 
-    let response: Result<Response> = client
-        .post("/activitymaps/query")
+    let response = client
+        .post("v1/activitymaps/query")?
         .json(&request)
         .send()
-        .validate_and_read();
+        .await?
+        .validate_and_read::<Response>()
+        .await?;
 
-    if let Ok(edges) = response {
-        let mut stdout = io::stdout();
-        for edge in &edges {
-            write_edge(&mut stdout, edge).unwrap();
-        }
+    let mut stdout = io::stdout();
+    for edge in &response {
+        write_edge(&mut stdout, edge).unwrap();
     }
+
+    Ok(())
 }

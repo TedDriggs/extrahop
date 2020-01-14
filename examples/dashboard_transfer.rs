@@ -1,13 +1,5 @@
-extern crate extrahop;
-extern crate reqwest;
-
-#[macro_use]
-extern crate serde_derive;
-
-extern crate serde;
-extern crate serde_json;
-
-use extrahop::{ApiKey, ApiResponse, Client, Error, ErrorKind, Username};
+use extrahop::{ApiResponse, Client, Username};
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Dashboard {
@@ -27,26 +19,31 @@ impl DashboardTransfer {
     }
 }
 
-fn main() {
-    let client = Client::danger_new_unverified("sample-vm", ApiKey::new("YOUR KEY")).unwrap();
-    let dashboards: Vec<Dashboard> = client
-        .get("/dashboards")
+#[tokio::main]
+async fn main() -> anyhow::Result<()> {
+    let client = Client::builder("sample-vm", "YOUR KEY")
+        .dangerous_disable_cert_verification(true)
+        .build()?;
+    let dashboards = client
+        .get("v1/dashboards")?
         .send()
-        .validate_and_read()
-        .unwrap();
+        .await?
+        .validate_and_read::<Vec<Dashboard>>()
+        .await?;
 
     let from_user = Some(Username::new("kenp"));
     let patch = DashboardTransfer::new(Username::new("setup"));
     for dashboard in dashboards {
         if dashboard.owner == from_user {
             let transfer_result = client
-                .patch(&format!("/dashboards/{}", dashboard.id))
+                .patch(&format!("/dashboards/{}", dashboard.id))?
                 .json(&patch)
                 .send()
-                .validate_status();
+                .await?
+                .validate_status()
+                .await;
 
             match transfer_result {
-                Err(Error(ErrorKind::Rest(rest), _)) => println!("Error: {}", rest),
                 Err(e) => println!("Error: {}", e),
                 Ok(..) => println!(
                     "Successfully transferred #{}, '{}'",
@@ -55,4 +52,6 @@ fn main() {
             };
         }
     }
+
+    Ok(())
 }

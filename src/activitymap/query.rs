@@ -6,13 +6,12 @@
 //! defaults; this should reduce the size of the serialized object and improve
 //! readability.
 
-use std::ops::Index;
-
-use serde::{Serialize, Serializer};
+use crate::activitymap::rsp::Appearance;
+use crate::{Oid, QueryTime};
+use derive_builder::Builder;
 use serde::ser::SerializeSeq;
-
-use ::{Builder, Oid, QueryTime};
-use activitymap::rsp::Appearance;
+use serde::{Deserialize, Serialize, Serializer};
+use std::ops::Index;
 
 /// Envelope for an ad-hoc activity map query.
 ///
@@ -42,6 +41,12 @@ pub struct Query {
     pub edge_annotations: Vec<EdgeAnnotation>,
 }
 
+impl Query {
+    pub fn builder() -> QueryBuilder {
+        QueryBuilder::default()
+    }
+}
+
 /// Find a step configuration for an `rsp::Appearance` from the edge list in
 /// a query response.
 impl Index<Appearance> for Query {
@@ -59,10 +64,6 @@ impl From<Walk> for Query {
             ..Default::default()
         }
     }
-}
-
-impl Builder for Query {
-    type Builder = QueryBuilder;
 }
 
 /// The type of metrics that should be used to compute edge weight.
@@ -113,6 +114,12 @@ pub struct Walk {
     pub steps: Vec<Step>,
 }
 
+impl Walk {
+    pub fn builder() -> WalkBuilder {
+        WalkBuilder::default()
+    }
+}
+
 impl Default for Walk {
     fn default() -> Self {
         Walk {
@@ -120,10 +127,6 @@ impl Default for Walk {
             steps: vec![Step::default()],
         }
     }
-}
-
-impl Builder for Walk {
-    type Builder = WalkBuilder;
 }
 
 /// Sets the origins for a walk.
@@ -146,13 +149,14 @@ impl Serialize for WalkOrigin {
                 /// valid type in other contexts, we hide that knowledge here.
                 #[derive(Serialize)]
                 struct AllDevices {
-                    object_type: &'static str
+                    object_type: &'static str,
                 };
 
                 (vec![AllDevices {
-                    object_type: "all_devices"
-                }]).serialize(s)
-            },
+                    object_type: "all_devices",
+                }])
+                .serialize(s)
+            }
             WalkOrigin::Specific(ref sources) => {
                 let mut seq = s.serialize_seq(Some(sources.len()))?;
                 for source in sources {
@@ -182,7 +186,7 @@ impl Source {
     /// Create a new `Source` instance.
     pub fn new<I: Into<Oid>>(object_type: ObjectType, id: I) -> Self {
         Source {
-            object_type: object_type,
+            object_type,
             object_id: id.into(),
         }
     }
@@ -244,6 +248,12 @@ pub struct Step {
     pub peer_not_in: Vec<Source>,
 }
 
+impl Step {
+    pub fn builder() -> StepBuilder {
+        StepBuilder::default()
+    }
+}
+
 impl Default for Step {
     fn default() -> Self {
         Step {
@@ -252,10 +262,6 @@ impl Default for Step {
             peer_not_in: vec![],
         }
     }
-}
-
-impl Builder for Step {
-    type Builder = StepBuilder;
 }
 
 /// A combination of protocol and peer role which can match a connection between devices.
@@ -274,7 +280,7 @@ impl Relationship {
     /// Create a new `Relationship` for the specified protocol and role.
     pub fn new<P: Into<Protocol>>(protocol: P, role: Role) -> Self {
         Self {
-            role: role,
+            role,
             protocol: Some(protocol.into()),
         }
     }
@@ -292,7 +298,7 @@ impl From<Protocol> for Relationship {
 impl From<Role> for Relationship {
     fn from(role: Role) -> Self {
         Relationship {
-            role: role,
+            role,
             protocol: None,
         }
     }
@@ -308,6 +314,8 @@ pub enum Role {
 }
 
 impl Role {
+    // This function is used by serde, which requires the target be a ref.
+    #[allow(clippy::trivially_copy_pass_by_ref)]
     fn is_default(&self) -> bool {
         *self == Role::Any
     }
@@ -339,8 +347,8 @@ impl From<String> for Protocol {
 
 #[cfg(test)]
 mod tests {
-    use serde_json;
     use super::WalkOrigin;
+    use serde_json;
 
     #[test]
     fn source_list_serialize_all_devices() {

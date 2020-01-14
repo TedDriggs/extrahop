@@ -1,4 +1,4 @@
-//! This example loads an activity map topology, then creates a map from each observed OID to 
+//! This example loads an activity map topology, then creates a map from each observed OID to
 //! the edges where that device appears.
 
 extern crate extrahop;
@@ -8,8 +8,8 @@ extern crate serde;
 
 use std::collections::HashMap;
 
-use extrahop::{ApiKey, ApiResponse, Client, Oid};
-use extrahop::activitymap::{Query, Response, Edge};
+use extrahop::activitymap::{Edge, Query, Response};
+use extrahop::{ApiResponse, Client, Oid};
 
 /// An activity map body with a map of node IDs to the edges in which they appear.
 #[derive(Clone)]
@@ -31,12 +31,15 @@ impl IndexedTopology {
 
     /// Gets the edges which contain the specified object ID.
     pub fn get(&self, id: Oid) -> Vec<&Edge> {
-        self.node_map.get(&id).map(|indices| {
-            indices
-                .iter()
-                .map(|index| self.topology.edges.get(*index).unwrap())
-                .collect()
-        }).unwrap_or_default()
+        self.node_map
+            .get(&id)
+            .map(|indices| {
+                indices
+                    .iter()
+                    .map(|index| self.topology.edges.get(*index).unwrap())
+                    .collect()
+            })
+            .unwrap_or_default()
     }
 }
 
@@ -47,7 +50,7 @@ impl From<Response> for IndexedTopology {
         // Walk the edges, populating the node map as we go
         {
             let mut add_to_index = |index, id| {
-                let entry = node_map.entry(id).or_insert(Vec::new());
+                let entry = node_map.entry(id).or_insert_with(Vec::new);
                 entry.push(index);
             };
 
@@ -59,7 +62,7 @@ impl From<Response> for IndexedTopology {
 
         Self {
             topology: map,
-            node_map: node_map,
+            node_map,
         }
     }
 }
@@ -70,10 +73,11 @@ impl<'de> serde::Deserialize<'de> for IndexedTopology {
     }
 }
 
-fn main() {
+#[tokio::main]
+async fn main() -> anyhow::Result<()> {
     // Define the API client. No connection is made, as all requests go over HTTPS.
     // However, the client can be reused to make many requests.
-    let client = Client::new("your-host", ApiKey::new("YOUR-KEY"));
+    let client = Client::new("your-host", "YOUR-KEY")?;
 
     let query = Query {
         from: (-30000).into(),
@@ -81,11 +85,12 @@ fn main() {
     };
 
     let rsp: IndexedTopology = client
-        .post("/activitymaps/query")
+        .post("v1/activitymaps/query")?
         .json(&query)
         .send()
-        .validate_and_read()
-        .expect("Query should produce a valid response");
+        .await?
+        .validate_and_read::<IndexedTopology>()
+        .await?;
 
     if !rsp.topology().is_complete() {
         println!("Warning; topology may be incomplete");
@@ -97,4 +102,6 @@ fn main() {
             println!("{:?}", edge);
         }
     }
+
+    Ok(())
 }

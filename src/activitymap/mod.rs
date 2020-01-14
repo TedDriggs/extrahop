@@ -9,7 +9,7 @@
 //!
 //! ## Using Builders
 //! ```rust
-//! use extrahop::{Builder, Oid};
+//! use extrahop::Oid;
 //! use extrahop::activitymap::{self, Walk, Source, Step};
 //!
 //! // Create a request for the last half hour, starting from device 15 and
@@ -33,15 +33,15 @@ pub mod rsp;
 pub use self::query::{Query, Source, Step, Walk, WalkOrigin};
 
 #[doc(inline)]
-pub use self::rsp::{Response, Edge};
+pub use self::rsp::{Edge, Response};
 
 #[cfg(test)]
 mod tests {
     use serde_json;
 
-    use ::Oid;
-    use super::{Query, Step, Source, Walk};
-    use super::query::{EdgeAnnotation, Role, Relationship};
+    use super::query::{EdgeAnnotation, Relationship, Role};
+    use super::{Query, Source, Step, Walk};
+    use crate::Oid;
 
     #[test]
     fn it_works() {
@@ -49,12 +49,10 @@ mod tests {
             from: 0.into(),
             walks: vec![Walk {
                 origins: vec![Source::device(Oid::new(14))].into(),
-                steps: vec![
-                    Step {
-                        relationships: vec![Relationship::new("HTTP", Role::Server)],
-                        ..Default::default()
-                    },
-                ]
+                steps: vec![Step {
+                    relationships: vec![Relationship::new("HTTP", Role::Server)],
+                    ..Default::default()
+                }],
             }],
             edge_annotations: vec![EdgeAnnotation::Protocols],
             ..Default::default()

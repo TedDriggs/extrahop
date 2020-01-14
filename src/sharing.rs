@@ -2,10 +2,10 @@
 //!
 //! Dashboard sharing is controlled via `api/v1/dashboards/{id}/sharing`.
 
+use crate::{Patch, UserGroupId, Username};
+use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::default::Default;
-
-use {Patch, Username, UserGroupId};
 
 /// A set of permissions grantable to a user or group.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
@@ -26,15 +26,21 @@ fromstr_deserialize!(Role);
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Sharing<R> {
     /// The access level guaranteed to all authenticated users on the appliance.
-    #[serde(skip_serializing_if="Option::is_none")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub anyone: Option<R>,
 
     /// A map of users to granted access levels.
-    #[serde(default = "HashMap::default", skip_serializing_if="HashMap::is_empty")]
+    #[serde(
+        default = "HashMap::default",
+        skip_serializing_if = "HashMap::is_empty"
+    )]
     pub users: HashMap<Username, R>,
 
     /// A map of user groups to granted access levels.
-    #[serde(default = "HashMap::default", skip_serializing_if="HashMap::is_empty")]
+    #[serde(
+        default = "HashMap::default",
+        skip_serializing_if = "HashMap::is_empty"
+    )]
     pub groups: HashMap<UserGroupId, R>,
 }
 
@@ -91,11 +97,11 @@ mod tests {
 
     use serde_json;
 
-    use super::{SharingPatch, SharingState, Role};
+    use super::{Role, SharingPatch, SharingState};
 
-    use {Username, UserGroupId};
+    use crate::{UserGroupId, Username};
 
-    static SAMPLE_1: &'static str = r#"{
+    static SAMPLE_1: &str = r#"{
             "anyone": "viewer",
             "users": {
                 "abirmingham": "editor",
@@ -111,21 +117,26 @@ mod tests {
 
     #[test]
     fn deserialize_sharing() {
-
         let parsed: SharingState = serde_json::from_str(SAMPLE_1).unwrap();
 
-        assert_eq!(Some(&Role::Editor),
-                   parsed.users.get(&Username::new("ehd".to_string())));
+        assert_eq!(
+            Some(&Role::Editor),
+            parsed.users.get(&Username::new("ehd".to_string()))
+        );
     }
 
     #[test]
     fn serialize_full_patch() {
         let change = SharingPatch {
             anyone: Some(None),
-            users: HashMap::from_iter(vec![(Username::new("ehd"), None),
-                                           (Username::new("mikelly"), Some(Role::Viewer))]),
-            groups: HashMap::from_iter(iter::once((UserGroupId::new("remote.pm-team"),
-                                                   Some(Role::Editor)))),
+            users: HashMap::from_iter(vec![
+                (Username::new("ehd"), None),
+                (Username::new("mikelly"), Some(Role::Viewer)),
+            ]),
+            groups: HashMap::from_iter(iter::once((
+                UserGroupId::new("remote.pm-team"),
+                Some(Role::Editor),
+            ))),
         };
 
         println!("{}", serde_json::to_string_pretty(&change).unwrap());
@@ -144,11 +155,15 @@ mod tests {
     #[test]
     fn noop_patch() {
         // A no-op patch is an empty JSON object.
-        assert_eq!("{}",
-                   &serde_json::to_string(&SharingPatch::default()).unwrap());
+        assert_eq!(
+            "{}",
+            &serde_json::to_string(&SharingPatch::default()).unwrap()
+        );
 
         // And conversely, an empty JSON object is a no-op patch.
-        assert_eq!(SharingPatch::default(),
-                   serde_json::from_str::<SharingPatch>("{}").unwrap());
+        assert_eq!(
+            SharingPatch::default(),
+            serde_json::from_str::<SharingPatch>("{}").unwrap()
+        );
     }
 }

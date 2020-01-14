@@ -1,17 +1,14 @@
 //! Types for deserializing a response from `/api/v1/activitymaps/query`
 
-use std::{cmp, fmt, vec, slice};
-use std::collections::HashSet;
-
+use crate::Oid;
 #[cfg(feature = "petgraph")]
 use petgraph::Graph;
-
+use serde::{Deserialize, Serialize};
+use serde_json;
 #[cfg(feature = "petgraph")]
 use std::collections::HashMap;
-
-use serde_json;
-
-use Oid;
+use std::collections::HashSet;
+use std::{cmp, fmt, slice, vec};
 
 /// A successful response to a single topology API request.
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -43,7 +40,7 @@ impl Response {
     }
 
     /// Gets a slice iterator over the edges
-    pub fn iter<'a>(&'a self) -> slice::Iter<'a, Edge> {
+    pub fn iter(&self) -> slice::Iter<'_, Edge> {
         self.edges.iter()
     }
 
@@ -97,7 +94,7 @@ impl From<Response> for Graph<Oid, Edge> {
             graph.add_edge(
                 *node_idx.get(&edge.from).unwrap(),
                 *node_idx.get(&edge.to).unwrap(),
-                edge
+                edge,
             );
         }
 
@@ -191,10 +188,7 @@ pub struct Appearance {
 impl Appearance {
     /// Create a new `Appearance` for a specific walk and step.
     pub fn new(walk: u16, step: u16) -> Self {
-        Appearance {
-            walk: walk,
-            step: step,
-        }
+        Appearance { walk, step }
     }
 }
 
@@ -295,11 +289,14 @@ mod tests {
 
         items.sort();
 
-        assert_eq!(items, vec![
-            Appearance::new(0, 1),
-            Appearance::new(0, 2),
-            Appearance::new(1, 0),
-            Appearance::new(1, 2),
-        ]);
+        assert_eq!(
+            items,
+            vec![
+                Appearance::new(0, 1),
+                Appearance::new(0, 2),
+                Appearance::new(1, 0),
+                Appearance::new(1, 2),
+            ]
+        );
     }
 }
