@@ -1,9 +1,10 @@
-use extrahop::activitymap::{Edge, Query, Response};
-use extrahop::{ApiResponse, Client, Oid};
-use petgraph::algo::tarjan_scc;
-
+#[cfg(feature = "topology")]
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
+    use extrahop::activitymap::{Edge, Query, Response};
+    use extrahop::{ApiResponse, Client, Oid};
+    use petgraph::algo::tarjan_scc;
+
     // Define the API client. No connection is made, as all requests go over HTTPS.
     // However, the client can be reused to make many requests.
     let client = Client::new("YOUR-HOST", "YOUR-KEY")?;
@@ -49,3 +50,6 @@ async fn main() -> anyhow::Result<()> {
 
     Ok(())
 }
+
+#[cfg(not(feature = "topology"))]
+fn main() {}

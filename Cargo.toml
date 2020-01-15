@@ -26,11 +26,8 @@ thiserror = "1.0.9"
 url = "2.1.1"
 
 [features]
-default = ["petgraph", "topology"]
-
 native-tls = ["reqwest/native-tls"]
 
-# Feature-gate common client use-cases to minimize build size
 topology = ["derive_builder"]
 
 [dev-dependencies]

@@ -1,26 +1,23 @@
 //! This example gets an activity map and then writes the edges out as tab-separated values.
 
-extern crate extrahop;
-extern crate reqwest;
-
-use std::io;
-
-use extrahop::activitymap::{query, Edge, Query, Response, Source, Walk};
-use extrahop::{ApiResponse, Client};
-
-fn write_edge(f: &mut dyn io::Write, edge: &Edge) -> io::Result<()> {
-    writeln!(
-        f,
-        "{from}\t{to}\t{weight}",
-        from = edge.from.as_url_part(),
-        to = edge.to.as_url_part(),
-        weight = edge.weight
-    )
-}
-
+#[cfg(feature = "topology")]
 #[tokio::main]
-#[allow(clippy::needless_update)]
 async fn main() -> anyhow::Result<()> {
+    use std::io;
+
+    use extrahop::activitymap::{query, Edge, Query, Response, Source, Walk};
+    use extrahop::{ApiResponse, Client};
+
+    fn write_edge(f: &mut dyn io::Write, edge: &Edge) -> io::Result<()> {
+        writeln!(
+            f,
+            "{from}\t{to}\t{weight}",
+            from = edge.from.as_url_part(),
+            to = edge.to.as_url_part(),
+            weight = edge.weight
+        )
+    }
+
     let client = Client::new("your-extrahop", "YOUR-KEY")?;
 
     // Create topology query
@@ -50,3 +47,6 @@ async fn main() -> anyhow::Result<()> {
 
     Ok(())
 }
+
+#[cfg(not(feature = "topology"))]
+fn main() {}

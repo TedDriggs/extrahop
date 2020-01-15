@@ -1,23 +1,23 @@
 //! This example loads an activity map topology, then creates a map from each observed OID to
 //! the edges where that device appears.
 
-extern crate extrahop;
-extern crate reqwest;
-
-extern crate serde;
-
+#[cfg(feature = "topology")]
 use std::collections::HashMap;
 
+#[cfg(feature = "topology")]
 use extrahop::activitymap::{Edge, Query, Response};
+#[cfg(feature = "topology")]
 use extrahop::{ApiResponse, Client, Oid};
 
 /// An activity map body with a map of node IDs to the edges in which they appear.
 #[derive(Clone)]
+#[cfg(feature = "topology")]
 struct IndexedTopology {
     topology: Response,
     node_map: HashMap<Oid, Vec<usize>>,
 }
 
+#[cfg(feature = "topology")]
 impl IndexedTopology {
     /// Gets read access to the topology returned by the appliance.
     pub fn topology(&self) -> &Response {
@@ -43,6 +43,7 @@ impl IndexedTopology {
     }
 }
 
+#[cfg(feature = "topology")]
 impl From<Response> for IndexedTopology {
     fn from(map: Response) -> Self {
         let mut node_map = HashMap::new();
@@ -67,12 +68,14 @@ impl From<Response> for IndexedTopology {
     }
 }
 
+#[cfg(feature = "topology")]
 impl<'de> serde::Deserialize<'de> for IndexedTopology {
     fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
         Ok(IndexedTopology::from(Response::deserialize(deserializer)?))
     }
 }
 
+#[cfg(feature = "topology")]
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     // Define the API client. No connection is made, as all requests go over HTTPS.
@@ -102,3 +105,6 @@ async fn main() -> anyhow::Result<()> {
 
     Ok(())
 }
+
+#[cfg(not(feature = "topology"))]
+fn main() {}
