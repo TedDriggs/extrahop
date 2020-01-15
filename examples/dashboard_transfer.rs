@@ -1,20 +1,29 @@
-use extrahop::{ApiResponse, Client, Username};
+use extrahop::{ApiResponse, Client};
 use serde::{Deserialize, Serialize};
 
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize)]
+struct Username(String);
+
+impl Username {
+    fn new(name: impl Into<String>) -> Self {
+        Username(name.into())
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-pub struct Dashboard {
+struct Dashboard {
     pub id: usize,
     pub owner: Option<Username>,
     pub name: String,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-pub struct DashboardTransfer {
-    pub owner: Username,
+struct DashboardTransfer {
+    owner: Username,
 }
 
 impl DashboardTransfer {
-    pub fn new(to: Username) -> Self {
+    fn new(to: Username) -> Self {
         DashboardTransfer { owner: to }
     }
 }
@@ -36,7 +45,7 @@ async fn main() -> anyhow::Result<()> {
     for dashboard in dashboards {
         if dashboard.owner == from_user {
             let transfer_result = client
-                .patch(&format!("/dashboards/{}", dashboard.id))?
+                .patch(&format!("v1/dashboards/{}", dashboard.id))?
                 .json(&patch)
                 .send()
                 .await?
