@@ -79,10 +79,7 @@ async fn main() -> anyhow::Result<()> {
     // However, the client can be reused to make many requests.
     let client = Client::new("your-host", "YOUR-KEY")?;
 
-    let query = Query {
-        from: (-30000).into(),
-        ..Default::default()
-    };
+    let query = Query::builder().from(-30000).build().unwrap();
 
     let rsp: IndexedTopology = client
         .post("v1/activitymaps/query")?

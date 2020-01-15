@@ -14,13 +14,10 @@ use serde::{Deserialize, Serialize, Serializer};
 use std::ops::Index;
 
 /// Envelope for an ad-hoc activity map query.
-///
-/// # Construction
-/// If constructed with struct literal syntax, `Query::default()` _must_
-/// be used to ensure source compatibility with future library updates.
 #[derive(Debug, Clone, Serialize, Deserialize, Default, Builder)]
 #[builder(default, setter(into))]
 #[serde(default)]
+#[non_exhaustive]
 pub struct Query {
     /// The absolute or relative timestamp at which the query should start.
     pub from: QueryTime,
@@ -184,7 +181,7 @@ pub struct Source {
 
 impl Source {
     /// Create a new `Source` instance.
-    pub fn new<I: Into<Oid>>(object_type: ObjectType, id: I) -> Self {
+    pub fn new(object_type: ObjectType, id: impl Into<Oid>) -> Self {
         Source {
             object_type,
             object_id: id.into(),
@@ -192,12 +189,12 @@ impl Source {
     }
 
     /// Create a new `Source` instance for a device.
-    pub fn device<I: Into<Oid>>(id: I) -> Self {
+    pub fn device(id: impl Into<Oid>) -> Self {
         Source::new(ObjectType::Device, id.into())
     }
 
     /// Create a new `Source` instance for a device group.
-    pub fn device_group<I: Into<Oid>>(id: I) -> Self {
+    pub fn device_group(id: impl Into<Oid>) -> Self {
         Source::new(ObjectType::DeviceGroup, id.into())
     }
 }
@@ -348,7 +345,6 @@ impl From<String> for Protocol {
 #[cfg(test)]
 mod tests {
     use super::WalkOrigin;
-    use serde_json;
 
     #[test]
     fn source_list_serialize_all_devices() {

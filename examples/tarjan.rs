@@ -8,11 +8,11 @@ async fn main() -> anyhow::Result<()> {
     // However, the client can be reused to make many requests.
     let client = Client::new("YOUR-HOST", "YOUR-KEY")?;
 
-    let query = Query {
-        from: (-30000).into(),
-        walks: vec![Default::default()],
-        ..Query::default()
-    };
+    let query = Query::builder()
+        .from(-30000)
+        .walks(vec![Default::default()])
+        .build()
+        .unwrap();
 
     let rsp = client
         .post("v1/activitymaps/query")?
