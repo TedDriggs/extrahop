@@ -80,9 +80,9 @@ impl<'de> serde::Deserialize<'de> for IndexedTopology {
 async fn main() -> anyhow::Result<()> {
     // Define the API client. No connection is made, as all requests go over HTTPS.
     // However, the client can be reused to make many requests.
-    let client = Client::new("your-host", "YOUR-KEY")?;
+    let client = Client::new_appliance("your-host", "YOUR-KEY".into(), Default::default()).await?;
 
-    let query = Query::builder().from(-30000).build().unwrap();
+    let query = Query::builder().from(-30000).build()?;
 
     let rsp: IndexedTopology = client
         .post("v1/activitymaps/query")?

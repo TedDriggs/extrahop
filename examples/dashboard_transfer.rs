@@ -30,9 +30,7 @@ impl DashboardTransfer {
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
-    let client = Client::builder("sample-vm", "YOUR KEY")
-        .dangerous_disable_cert_verification(true)
-        .build()?;
+    let client = Client::new_appliance("sample-vm", "YOUR KEY".into(), Default::default()).await?;
     let dashboards = client
         .get("v1/dashboards")?
         .send()

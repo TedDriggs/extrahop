@@ -12,7 +12,7 @@
 //! level.
 
 mod api_response;
-mod client;
+pub mod client;
 mod error;
 mod oid;
 mod query_time;
@@ -21,7 +21,8 @@ mod query_time;
 pub mod activitymap;
 
 pub use api_response::ApiResponse;
-pub use client::Client;
+#[doc(inline)]
+pub use client::{CertVerification, Client};
 pub use error::{Error, RestError};
 pub use oid::Oid;
 pub use query_time::QueryTime;

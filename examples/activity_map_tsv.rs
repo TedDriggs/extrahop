@@ -18,7 +18,8 @@ async fn main() -> anyhow::Result<()> {
         )
     }
 
-    let client = Client::new("your-extrahop", "YOUR-KEY")?;
+    let client =
+        Client::new_appliance("your-extrahop", "YOUR-KEY".into(), Default::default()).await?;
 
     // Create topology query
     let request = Query::builder()
@@ -29,8 +30,7 @@ async fn main() -> anyhow::Result<()> {
             ..Default::default()
         }])
         .edge_annotations(vec![query::EdgeAnnotation::Protocols])
-        .build()
-        .unwrap();
+        .build()?;
 
     let response = client
         .post("v1/activitymaps/query")?
