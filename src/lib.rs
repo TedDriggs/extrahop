@@ -26,5 +26,3 @@ pub use client::{CertVerification, Client};
 pub use error::{Error, RestError};
 pub use oid::Oid;
 pub use query_time::QueryTime;
-
-pub type Result<T> = std::result::Result<T, Error>;

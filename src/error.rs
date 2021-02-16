@@ -1,14 +1,10 @@
 use reqwest::StatusCode;
 use std::fmt;
 use thiserror::Error;
-use url::ParseError;
 
 #[derive(Debug, Error)]
 #[error("Client error")]
 pub enum Error {
-    Hostname,
-    ApiKey,
-    Path(#[from] ParseError),
     Reqwest(#[from] reqwest::Error),
     Rest(#[from] RestError),
 }
