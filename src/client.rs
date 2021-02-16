@@ -107,6 +107,10 @@ pub struct Saas {
     /// The API credential's secret; used to request an access token.
     secret: SecUtf8,
     /// The temporary access token used in all API calls.
+    ///
+    /// The access token is kept in a `RefCell` to allow regenerating the token without requiring
+    /// the caller to have a mutable reference to the client. Keeping the access token up-to-date
+    /// is largely an internal concern of the SaaS client.
     access_token: RefCell<SaasAccessToken>,
     client: reqwest::Client,
 }
@@ -124,7 +128,7 @@ impl Saas {
             Url::parse("https://temp.cloud.extrahop.com").expect("Hardcoded starting URL is valid");
         root.set_host(Some(domain))?;
 
-        let client = reqwest::Client::new();
+        let client = reqwest::Client::builder().https_only(true).build()?;
         let access_token = Saas::get_access_token(&client, &root, &id, &secret).await?;
 
         Ok(Self {
@@ -201,11 +205,13 @@ pub enum ApplianceClientError {
     Reqwest(#[from] reqwest::Error),
 }
 
-/// Appliance client certificate validation behavior.
+/// Appliance client's server certificate validation behavior.
 pub enum CertVerification {
     /// Use the system's standard certificate validation rules and root certificates.
     System,
     /// Accept any certificate. This is dangerous and should not be done lightly.
+    /// Instead, prefer getting the appliance certificate once and creating a client with
+    /// [`CertVerification::Custom`].
     DangerAcceptInvalid,
     /// Add the specified certificate as a root certificate for this client. This allows
     /// the safe use of self-signed appliance certs.
@@ -219,6 +225,8 @@ impl Default for CertVerification {
 }
 
 /// A client to communicate with a specific ExtraHop appliance.
+///
+/// The client holds a connection pool internally, so it is recommended that you create one and reuse it.
 pub struct Appliance {
     root: Url,
     api_key: SecUtf8,
@@ -238,9 +246,11 @@ impl Appliance {
             CertVerification::System => reqwest::Client::new(),
             CertVerification::DangerAcceptInvalid => reqwest::Client::builder()
                 .danger_accept_invalid_certs(true)
+                .https_only(true)
                 .build()?,
             CertVerification::Custom(cert) => reqwest::Client::builder()
                 .add_root_certificate(cert)
+                .https_only(true)
                 .build()?,
         };
 
@@ -288,6 +298,8 @@ enum Inner {
 /// There is strong overlap between the SaaS and EDA/ECA APIs, so most code written for one
 /// will work unmodified for the other. Functions can accept `Client` to be agnostic to which
 /// implementation they communicate with.
+///
+/// The client holds a connection pool internally, so it is recommended that you create one and reuse it.
 pub struct Client {
     inner: Inner,
 }
