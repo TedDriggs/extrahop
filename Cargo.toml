@@ -30,5 +30,6 @@ topology = ["derive_builder", "petgraph"]
 [dev-dependencies]
 # Dependencies used in the examples
 anyhow = "1.0.13"
+filter_ast = { version = "0.1.1", features = ["serde"] }
 structopt = "0.3.3"
 tokio = { version = "0.2.0", features = ["full"] }
