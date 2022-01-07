@@ -1,5 +1,5 @@
 use extrahop::{ApiResponse, Client};
-use filter_ast::{Expr, Logic, Tree};
+use filter_ast::Expr;
 use serde::Deserialize;
 
 #[derive(Debug, Deserialize)]
@@ -14,13 +14,10 @@ struct Device {
 async fn search_devices(client: &Client) -> anyhow::Result<Vec<Device>> {
     client
         .post("v1/devices/search")?
-        .json(&Tree::new(
-            Logic::And,
-            vec![
-                Expr::new_clause("software", "!=", "windows"),
-                Expr::new_clause("ipaddr", "=", "123.156.189.0/24"),
-            ],
-        ))
+        .json(
+            &(Expr::new_clause("software", "!=", "windows")
+                & Expr::new_clause("ipaddr", "=", "123.156.189.0/24")),
+        )
         .send()
         .await?
         .validate_and_read::<Vec<Device>>()
@@ -32,6 +29,8 @@ async fn search_devices(client: &Client) -> anyhow::Result<Vec<Device>> {
 async fn main() -> anyhow::Result<()> {
     let client = Client::new_saas("example.cloud.extrahop.com", "123".into(), "456".into()).await?;
     let devices = search_devices(&client).await?;
-    dbg!(devices);
+    for device in devices {
+        println!("{}", device.display_name);
+    }
     Ok(())
 }
